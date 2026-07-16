@@ -213,17 +213,13 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .row-mini-cell.filled { background: var(--gold); border-color: var(--gold); }
 
 /* ---------- ベット ---------- */
-#bet-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-@media (min-width: 700px) {
-  #bet-grid { grid-template-columns: repeat(3, 1fr); }
-  .bet-row { order: var(--desktop-order, 0); }
-}
-.bet-row { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; gap: 6px; min-width: 0; }
-.bet-row-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+#bet-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.bet-row { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; }
+.bet-row-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1 1 auto; }
 .bet-row-left span { font-size: 13px; color: var(--muted); flex-shrink: 0; display: flex; align-items: center; gap: 4px; }
 .bet-row input {
-  flex: 1 1 50px; min-width: 50px; max-width: 90px; width: auto; text-align: right;
-  padding: 6px 6px; font-size: 16px;
+  flex: 0 1 110px; min-width: 90px; max-width: 130px; width: auto; text-align: right;
+  padding: 8px 8px; font-size: 16px;
   -moz-appearance: textfield;
 }
 .bet-row input::-webkit-outer-spin-button,
@@ -1387,7 +1383,6 @@ function renderBetGrid() {
     const isGroupBingo = group.lineIds.some((id) => bingoLineIds.has(id));
     const row = document.createElement("div");
     row.className = "bet-row" + (isGroupBingo ? " bingo-glow" : "");
-    row.style.setProperty("--desktop-order", i + 1);
 
     const left = document.createElement("div");
     left.className = "bet-row-left";
