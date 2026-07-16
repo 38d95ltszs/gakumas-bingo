@@ -1969,3 +1969,235 @@ async function renderRankingTab() {
 
   const query = supabase.from("results").select("*").eq("event_id", selectedEvent.id);
   const { data, error } = announced
+    ? await query.order("total_points", { ascending: false, nullsFirst: false }).order("bingo_count", { ascending: false })
+    : await query.order("confirmed_at", { ascending: true });
+
+  if (error) { wrap.innerHTML = `<p class="error-text">読み込みに失敗しました: ${error.message}</p>`; return; }
+  if (!data || data.length === 0) {
+    wrap.innerHTML = '<p class="note-text">まだ「確定」した参加者がいません。</p>';
+    return;
+  }
+
+  if (!announced) {
+    wrap.innerHTML = `
+      <p class="note-text" style="margin-bottom:12px;">結果発表前(正解セトリ登録前)のため、確定した順に表示しています。</p>
+      ${data.map((r) => `
+        <div class="rank-card">
+          <div class="rank-line2">
+            <span class="rank-username">${escapeHtml(r.username)}</span>
+            <span class="rank-idol">${escapeHtml(r.selected_idol || "-")}</span>
+          </div>
+          <div class="rank-line3">${escapeHtml(r.comment || "")}</div>
+        </div>`).join("")}`;
+    return;
+  }
+
+  wrap.innerHTML = data.map((r, i) => {
+    const rank = i + 1;
+    const rankClass = rank === 1 ? "rank-1" : rank === 2 ? "rank-2" : rank === 3 ? "rank-3" : "";
+    const jewels = r.total_points != null ? Number(r.total_points) : null;
+    const gachaCount = jewels != null ? Math.floor(jewels / 300) : null;
+    return `
+      <div class="rank-card">
+        <div class="rank-line1">
+          <span class="rank-cell ${rankClass}">${rank}位</span>
+          <span class="rank-jewels mono-font">${jewels != null ? jewels.toLocaleString() + " ジュエル" : "採点待ち"}</span>
+          ${jewels != null ? `<span class="rank-gacha mono-font">(ガシャ${gachaCount}連)</span>` : ""}
+        </div>
+        <div class="rank-line2">
+          <span class="rank-username">${escapeHtml(r.username)}</span>
+          <span class="rank-idol">${escapeHtml(r.selected_idol || "-")}</span>
+        </div>
+        <div class="rank-line3">${escapeHtml(r.comment || "")}</div>
+      </div>`;
+  }).join("");
+}
+document.getElementById("ranking-refresh-btn").addEventListener("click", renderRankingTab);
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+// ================= 管理タブ =================
+function renderAdminTab() {
+  document.getElementById("edit-deadline-input").value = toDatetimeLocalValue(selectedEvent.deadline);
+  parsedCsvRows = null;
+  document.getElementById("csv-submit-btn").classList.add("hidden");
+  document.getElementById("admin-preview").innerHTML = "";
+  document.getElementById("csv-error").classList.add("hidden");
+  document.getElementById("csv-status").classList.add("hidden");
+
+  document.getElementById("songs-count").textContent = eventSongs.length;
+  document.getElementById("idols-count").textContent = eventIdols.length;
+  document.getElementById("songs-csv-text").value = "";
+  document.getElementById("idols-csv-text").value = "";
+  document.getElementById("songs-csv-error").classList.add("hidden");
+  document.getElementById("songs-csv-status").classList.add("hidden");
+  document.getElementById("idols-csv-error").classList.add("hidden");
+  document.getElementById("idols-csv-status").classList.add("hidden");
+  document.getElementById("delete-event-error").classList.add("hidden");
+}
+
+document.getElementById("csv-file").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => { document.getElementById("csv-text").value = reader.result; };
+  reader.readAsText(file, "utf-8");
+});
+
+document.getElementById("csv-parse-btn").addEventListener("click", () => {
+  const errEl = document.getElementById("csv-error");
+  const statusEl = document.getElementById("csv-status");
+  errEl.classList.add("hidden"); statusEl.classList.add("hidden");
+
+  const raw = document.getElementById("csv-text").value;
+  let lines = raw.split(/\r?\n/).map((l) => l.trim()).filter((l) => l.length > 0);
+  if (lines.length && /^(曲名|song)/i.test(lines[0])) lines = lines.slice(1);
+
+  if (lines.length < 2) {
+    errEl.textContent = `曲目が少なすぎます(最低2行、1曲目とラスト曲の判定に必要)。現在 ${lines.length}行。`;
+    errEl.classList.remove("hidden");
+    return;
+  }
+
+  const rows = lines.map((line, idx) => {
+    const firstComma = line.indexOf(",");
+    const song = (firstComma >= 0 ? line.slice(0, firstComma) : line).trim();
+    const membersRaw = firstComma >= 0 ? line.slice(firstComma + 1).trim() : "";
+    const members = parseSingerField(membersRaw);
+    return { position: idx + 1, song, members };
+  });
+
+  if (rows.some((r) => !r.song)) {
+    errEl.textContent = "曲名が空の行があります。";
+    errEl.classList.remove("hidden");
+    return;
+  }
+
+  parsedCsvRows = rows;
+  const preview = document.getElementById("admin-preview");
+  const rowsHtml = rows
+    .map((r) => `<tr><td class="mono-font">${r.position}</td><td>${escapeHtml(r.song)}</td><td>${escapeHtml(r.members.join("・") || "-")}</td></tr>`)
+    .join("");
+  preview.innerHTML = `<div class="table-scroll"><table><thead><tr><th>#</th><th>曲名</th><th>担当アイドル</th></tr></thead><tbody>${rowsHtml}</tbody></table></div>`;
+  document.getElementById("csv-submit-btn").classList.remove("hidden");
+});
+
+document.getElementById("csv-submit-btn").addEventListener("click", async () => {
+  if (!parsedCsvRows) return;
+  const errEl = document.getElementById("csv-error");
+  const statusEl = document.getElementById("csv-status");
+  errEl.classList.add("hidden"); statusEl.classList.add("hidden");
+
+  const { error: delError } = await supabase.from("event_setlists").delete().eq("event_id", selectedEvent.id);
+  if (delError) { errEl.textContent = "登録に失敗しました: " + delError.message; errEl.classList.remove("hidden"); return; }
+
+  const rowsToInsert = parsedCsvRows.map((r) => ({ event_id: selectedEvent.id, position: r.position, song: r.song, members: r.members }));
+  const { error: insError } = await supabase.from("event_setlists").insert(rowsToInsert);
+  if (insError) { errEl.textContent = "登録に失敗しました: " + insError.message; errEl.classList.remove("hidden"); return; }
+
+  statusEl.textContent = "✓ 正解セトリを登録しました";
+  statusEl.classList.remove("hidden");
+  await loadEventSetlist();
+  renderSetlistDisplay();
+  updateConfirmState();
+  tryAutoScore();
+});
+
+document.getElementById("edit-deadline-btn").addEventListener("click", async () => {
+  const val = document.getElementById("edit-deadline-input").value;
+  const statusEl = document.getElementById("edit-deadline-status");
+  if (!val) return;
+  const { error } = await supabase.from("events").update({ deadline: new Date(val).toISOString() }).eq("id", selectedEvent.id);
+  if (error) { statusEl.textContent = "更新に失敗しました: " + error.message; statusEl.classList.remove("hidden"); return; }
+  selectedEvent.deadline = new Date(val).toISOString();
+  isLocked = new Date() >= new Date(selectedEvent.deadline);
+  statusEl.textContent = "✓ 締切を更新しました";
+  statusEl.classList.remove("hidden");
+  renderDeadlineBanner();
+  updateConfirmState();
+  await loadEvents();
+});
+
+// ---- 候補曲リストの再登録 ----
+document.getElementById("songs-csv-file").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => { document.getElementById("songs-csv-text").value = reader.result; };
+  reader.readAsText(file, "utf-8");
+});
+document.getElementById("songs-csv-submit-btn").addEventListener("click", async () => {
+  const errEl = document.getElementById("songs-csv-error");
+  const statusEl = document.getElementById("songs-csv-status");
+  errEl.classList.add("hidden"); statusEl.classList.add("hidden");
+
+  const songs = parseListCsv(document.getElementById("songs-csv-text").value, ["曲名", "song"]);
+  if (songs.length === 0) {
+    errEl.textContent = "曲名を1つ以上入力してください。";
+    errEl.classList.remove("hidden");
+    return;
+  }
+  const { error: delError } = await supabase.from("event_songs").delete().eq("event_id", selectedEvent.id);
+  if (delError) { errEl.textContent = "更新に失敗しました: " + delError.message; errEl.classList.remove("hidden"); return; }
+  const { error: insError } = await supabase.from("event_songs").insert(songs.map((song) => ({ event_id: selectedEvent.id, song })));
+  if (insError) { errEl.textContent = "更新に失敗しました: " + insError.message; errEl.classList.remove("hidden"); return; }
+
+  await loadEventSongs();
+  document.getElementById("songs-count").textContent = eventSongs.length;
+  statusEl.textContent = `✓ 候補曲リストを更新しました(${eventSongs.length}曲)`;
+  statusEl.classList.remove("hidden");
+});
+
+// ---- 担当アイドル一覧の再登録 ----
+document.getElementById("idols-csv-file").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => { document.getElementById("idols-csv-text").value = reader.result; };
+  reader.readAsText(file, "utf-8");
+});
+document.getElementById("idols-csv-submit-btn").addEventListener("click", async () => {
+  const errEl = document.getElementById("idols-csv-error");
+  const statusEl = document.getElementById("idols-csv-status");
+  errEl.classList.add("hidden"); statusEl.classList.add("hidden");
+
+  const idols = parseIdolCsv(document.getElementById("idols-csv-text").value);
+  if (idols.length === 0) {
+    errEl.textContent = "アイドル名を1人以上入力してください。";
+    errEl.classList.remove("hidden");
+    return;
+  }
+  const { error: delError } = await supabase.from("event_idols").delete().eq("event_id", selectedEvent.id);
+  if (delError) { errEl.textContent = "更新に失敗しました: " + delError.message; errEl.classList.remove("hidden"); return; }
+  const { error: insError } = await supabase.from("event_idols").insert(idols.map((r) => ({ event_id: selectedEvent.id, idol: r.idol, cv: r.cv })));
+  if (insError) { errEl.textContent = "更新に失敗しました: " + insError.message; errEl.classList.remove("hidden"); return; }
+
+  await loadEventIdols();
+  document.getElementById("idols-count").textContent = eventIdols.length;
+  statusEl.textContent = `✓ 担当アイドル一覧を更新しました(${eventIdols.length}人)`;
+  statusEl.classList.remove("hidden");
+});
+
+// ---- 大会の削除 ----
+document.getElementById("delete-event-btn").addEventListener("click", async () => {
+  const errEl = document.getElementById("delete-event-error");
+  errEl.classList.add("hidden");
+  const ok = confirm(`「${selectedEvent.name}」を削除します。予想・ベット・正解セトリ・ランキングも全て消えます。元に戻せませんが、よろしいですか?`);
+  if (!ok) return;
+
+  const { error } = await supabase.from("events").delete().eq("id", selectedEvent.id);
+  if (error) {
+    errEl.textContent = "削除に失敗しました: " + error.message;
+    errEl.classList.remove("hidden");
+    return;
+  }
+  selectedEvent = null;
+  document.getElementById("event-content").classList.add("hidden");
+  document.getElementById("event-select").value = "";
+  await loadEvents();
+});
+</script>
+</body>
+</html>
