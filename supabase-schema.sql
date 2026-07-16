@@ -320,14 +320,14 @@ begin
             limit 5
           ) t
         ),
-        -- ラスト曲(ENCORE、右下マス=board[24])予想の人気上位5曲
+        -- ラスト曲(ENCORE、右下マス=配列の最後)予想の人気上位5曲
         'last_songs', (
           select coalesce(jsonb_agg(t), '[]'::jsonb) from (
-            select board->>24 as song_name, count(*) as votes
+            select board->>(jsonb_array_length(board)-1) as song_name, count(*) as votes
             from public.game_saves
             where event_id = evt_id and confirmed = true
-              and jsonb_array_length(board) >= 25
-              and board->>24 is not null
+              and jsonb_array_length(board) > 0
+              and board->>(jsonb_array_length(board)-1) is not null
             group by song_name
             order by votes desc
             limit 5
