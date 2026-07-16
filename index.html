@@ -211,6 +211,8 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 .row-mini-cell { border-radius: 1px; background: var(--card-alt); border: 1px solid var(--line); }
 .row-mini-cell.filled { background: var(--gold); border-color: var(--gold); }
+.row-mini-cell.special { border: 1.5px solid var(--pink); box-shadow: 0 0 0 1px var(--pink); }
+.row-mini-cell.special.filled { background: var(--gold); border-color: var(--pink); box-shadow: 0 0 0 1px var(--pink); }
 
 /* ---------- ベット ---------- */
 #bet-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
@@ -633,7 +635,16 @@ const BET_GROUPS = [
 ];
 
 const INITIAL_POINTS = 12000;
-const DEFAULT_BET = 300;
+const DEFAULT_GROUP_BET = 3000; // 各グループ(マスター/プロ/レギュラー)の初期ベット総額
+
+function makeDefaultBets() {
+  const b = {};
+  BET_GROUPS.forEach((group) => {
+    const perLine = DEFAULT_GROUP_BET / group.lineIds.length;
+    group.lineIds.forEach((lineId) => { b[lineId] = perLine; });
+  });
+  return b;
+}
 
 // ---- 担当アイドルの「ひとこと」メッセージ(汎用テンプレート。特定キャラの正確な口調再現ではなく、雰囲気重視) ----
 const IDOL_SELECT_MESSAGES = [
@@ -748,8 +759,7 @@ let isLocked = false;         // 締切時刻を過ぎたか
 let confirmed = false;        // ユーザーが「確定する」を押したか(締切前でも可)
 
 let board = Array(BOARD_SIZE).fill(null);
-let bets = {};
-LINES.forEach((l) => (bets[l.id] = DEFAULT_BET));
+let bets = makeDefaultBets();
 let points = INITIAL_POINTS;
 let selectedIdol = "";     // アイドル名(表示用)
 let selectedIdolCv = "";   // 声優(CV)名(的中判定用)
@@ -869,7 +879,7 @@ function resetAppStateOnLogout() {
   confirmed = false;
 
   board = Array(BOARD_SIZE).fill(null);
-  bets = Object.fromEntries(LINES.map((l) => [l.id, DEFAULT_BET]));
+  bets = makeDefaultBets();
   points = INITIAL_POINTS;
   selectedIdol = "";
   comment = "";
@@ -1025,7 +1035,7 @@ async function loadGameSave() {
 
   if (data) {
     board = data.board || Array(BOARD_SIZE).fill(null);
-    bets = data.bets || Object.fromEntries(LINES.map((l) => [l.id, DEFAULT_BET]));
+    bets = data.bets || makeDefaultBets();
     points = typeof data.points === "number" ? data.points : INITIAL_POINTS;
     selectedIdol = data.selected_idol || (eventIdols[0]?.idol || "");
     selectedIdolCv = data.selected_idol_cv || (eventIdols.find((e) => e.idol === selectedIdol)?.cv || "");
@@ -1034,7 +1044,7 @@ async function loadGameSave() {
     confirmed = !!data.confirmed;
   } else {
     board = Array(BOARD_SIZE).fill(null);
-    bets = Object.fromEntries(LINES.map((l) => [l.id, DEFAULT_BET]));
+    bets = makeDefaultBets();
     points = INITIAL_POINTS;
     selectedIdol = eventIdols[0]?.idol || "";
     selectedIdolCv = eventIdols[0]?.cv || "";
@@ -1367,8 +1377,9 @@ function createGroupMiniBoard(group) {
   const mini = document.createElement("div");
   mini.className = "row-mini-board";
   for (let i = 0; i < BOARD_SIZE; i++) {
+    const isSpecial = i === OPENING_IDX || i === ENCORE_IDX;
     const cell = document.createElement("div");
-    cell.className = "row-mini-cell" + (cellSet.has(i) ? " filled" : "");
+    cell.className = "row-mini-cell" + (cellSet.has(i) ? " filled" : "") + (isSpecial ? " special" : "");
     mini.appendChild(cell);
   }
   return mini;
