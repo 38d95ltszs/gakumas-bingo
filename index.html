@@ -494,7 +494,7 @@ td, th { padding: 6px; }
             </div>
             <p id="share-post-note" class="note-text" style="margin-top:6px;"></p>
           </div>
-          <canvas id="share-canvas" width="1200" height="675" class="hidden"></canvas>
+          <canvas id="share-canvas" width="1280" height="675" class="hidden"></canvas>
         </div>
       </div>
 
@@ -1759,6 +1759,32 @@ function wrapTextCentered(ctx, text, cx, startY, maxWidth, lineHeight, maxLines)
   lines.forEach((line, i) => ctx.fillText(line, cx, startY + i * lineHeight));
 }
 
+function wrapTextLeft(ctx, text, x, startY, maxWidth, lineHeight, maxLines) {
+  ctx.textAlign = "left";
+  if (!text) return;
+  const chars = [...text];
+  const lines = [];
+  let current = "";
+  for (const ch of chars) {
+    const test = current + ch;
+    if (current && ctx.measureText(test).width > maxWidth) {
+      lines.push(current);
+      current = ch;
+      if (lines.length === maxLines) { current = ""; break; }
+    } else {
+      current = test;
+    }
+  }
+  if (lines.length < maxLines && current) lines.push(current);
+  const consumed = lines.join("").length;
+  if (lines.length === maxLines && consumed < chars.length) {
+    let last = lines[maxLines - 1];
+    while (last.length > 0 && ctx.measureText(last + "…").width > maxWidth) last = last.slice(0, -1);
+    lines[maxLines - 1] = last + "…";
+  }
+  lines.forEach((line, i) => ctx.fillText(line, x, startY + i * lineHeight));
+}
+
 function currentShareUrl() {
   return location.origin + location.pathname;
 }
@@ -1778,6 +1804,7 @@ async function generateShareImage() {
   if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch {} }
 
   const canvas = document.getElementById("share-canvas");
+  canvas.width = 1280; canvas.height = 675;
   const ctx = canvas.getContext("2d");
   const W = canvas.width, H = canvas.height;
 
@@ -1796,15 +1823,58 @@ async function generateShareImage() {
   ctx.font = "600 16px 'Inter', sans-serif";
   ctx.fillText(selectedEvent.name, 32, 58);
 
-  // ボード
-  const boardX = 30, boardY = 90, boardSize = 555;
-  drawRoundedRect(ctx, boardX, boardY, boardSize, boardSize, 14, "#fbf3e4");
+  // ---- 3カラムのレイアウト計算 ----
+  const margin = 20, gap = 15;
+  const panelY = 90, panelH = H - panelY - 20;
+  const leftW = 350, rightW = 350;
+  const centerW = (W - margin * 2) - leftW - rightW - gap * 2;
+  const leftX = margin;
+  const centerX = leftX + leftW + gap;
+  const rightX = centerX + centerW + gap;
+
+  // ==================== 左: ベット状況 ====================
+  drawRoundedRect(ctx, leftX, panelY, leftW, panelH, 14, "#fbf3e4");
+  ctx.fillStyle = "#2b2119";
+  ctx.font = "26px 'Bebas Neue', sans-serif";
+  ctx.fillText("ベット状況", leftX + 18, panelY + 12);
+
+  ctx.font = "700 13px 'Inter', sans-serif";
+  ctx.fillStyle = "#e8791e";
+  const idolLabel = selectedIdol ? (selectedIdolCv ? `${selectedIdol}(C.V.${selectedIdolCv})` : selectedIdol) : "未選択";
+  wrapTextLeft(ctx, `担当: ${idolLabel}`, leftX + 18, panelY + 44, leftW - 36, 16, 2);
+
+  const totalBet = Object.values(bets).reduce((s, v) => s + (Number(v) || 0), 0);
+  ctx.font = "600 12px 'Inter', sans-serif";
+  ctx.fillStyle = "#9c8b76";
+  ctx.fillText(`現在 ${points.toLocaleString()} / ベット合計 ${totalBet.toLocaleString()}`, leftX + 18, panelY + 82);
+
+  const bingoLineIdSet = new Set(result ? result.lineResults.filter((l) => l.status === "BINGO").map((l) => l.id) : []);
+  let ly = panelY + 112;
+  const rowH = (panelH - 122) / 12;
+  LINES.forEach((line) => {
+    const isBingoLine = bingoLineIdSet.has(line.id);
+    ctx.textAlign = "left";
+    ctx.font = "600 13px 'Inter', sans-serif";
+    ctx.fillStyle = isBingoLine ? "#e8791e" : "#2b2119";
+    ctx.fillText(line.label, leftX + 18, ly);
+    ctx.font = "700 10px 'JetBrains Mono', monospace";
+    ctx.fillStyle = "#e8791e";
+    ctx.fillText(`×${line.mult}`, leftX + 110, ly + 2);
+    ctx.textAlign = "right";
+    ctx.font = "700 13px 'JetBrains Mono', monospace";
+    ctx.fillStyle = isBingoLine ? "#e8791e" : "#2b2119";
+    ctx.fillText(`${(Number(bets[line.id]) || 0).toLocaleString()}`, leftX + leftW - 18, ly);
+    ly += rowH;
+  });
+
+  // ==================== 中央: ビンゴカード ====================
+  drawRoundedRect(ctx, centerX, panelY, centerW, centerW, 14, "#fbf3e4");
   const pad = 12, cellGap = 6;
-  const cellSize = (boardSize - pad * 2 - cellGap * 4) / 5;
+  const cellSize = (centerW - pad * 2 - cellGap * 4) / 5;
   for (let i = 0; i < 25; i++) {
     const row = Math.floor(i / 5), col = i % 5;
-    const x = boardX + pad + col * (cellSize + cellGap);
-    const y = boardY + pad + row * (cellSize + cellGap);
+    const x = centerX + pad + col * (cellSize + cellGap);
+    const y = panelY + pad + row * (cellSize + cellGap);
     const isCenter = i === 12, isOpening = i === 0, isEncore = i === 24;
     const special = isOpening || isEncore;
     drawRoundedRect(ctx, x, y, cellSize, cellSize, 8, "#f3e4cb");
@@ -1828,34 +1898,46 @@ async function generateShareImage() {
   }
   ctx.textAlign = "left";
 
-  // ベット状況
-  const betX = boardX + boardSize + 15, betY = 90, betW = W - 30 - betX, betH = boardSize;
-  drawRoundedRect(ctx, betX, betY, betW, betH, 14, "#fbf3e4");
+  // ==================== 右: 結果 ====================
+  drawRoundedRect(ctx, rightX, panelY, rightW, panelH, 14, "#fbf3e4");
   ctx.fillStyle = "#2b2119";
   ctx.font = "26px 'Bebas Neue', sans-serif";
-  ctx.fillText("ベット状況", betX + 18, betY + 12);
+  ctx.fillText("結果", rightX + 18, panelY + 12);
 
-  const totalBet = Object.values(bets).reduce((s, v) => s + (Number(v) || 0), 0);
-  ctx.font = "600 13px 'Inter', sans-serif";
-  ctx.fillStyle = "#9c8b76";
-  ctx.fillText(`現在 ${points.toLocaleString()} ジュエル / ベット合計 ${totalBet.toLocaleString()}`, betX + 18, betY + 46);
-
-  let ly = betY + 82;
-  const rowH = (betH - 100) / 12;
-  LINES.forEach((line) => {
+  if (!result) {
+    ctx.textAlign = "center";
+    ctx.font = "22px 'Bebas Neue', sans-serif";
+    ctx.fillStyle = "#9c8b76";
+    ctx.fillText("結果待ち", rightX + rightW / 2, panelY + panelH / 2 - 30);
+    ctx.font = "500 12px 'Inter', sans-serif";
+    wrapTextCentered(ctx, "正解セトリ発表後に自動で表示されます", rightX + rightW / 2, panelY + panelH / 2 + 6, rightW - 50, 18, 3);
     ctx.textAlign = "left";
-    ctx.font = "600 14px 'Inter', sans-serif";
-    ctx.fillStyle = "#2b2119";
-    ctx.fillText(line.label, betX + 18, ly);
-    ctx.font = "700 11px 'JetBrains Mono', monospace";
+  } else {
+    const tier = scoreTier(result.finalTotal);
+    ctx.font = "700 13px 'Inter', sans-serif";
+    ctx.fillStyle = "#9c8b76";
+    ctx.fillText("最終ジュエル", rightX + 18, panelY + 50);
+    ctx.font = "700 30px 'JetBrains Mono', monospace";
     ctx.fillStyle = "#e8791e";
-    ctx.fillText(`×${line.mult}`, betX + 130, ly + 2);
-    ctx.textAlign = "right";
-    ctx.font = "700 14px 'JetBrains Mono', monospace";
+    ctx.fillText(result.finalTotal.toLocaleString(), rightX + 18, panelY + 68);
+
+    ctx.font = "700 14px 'Inter', sans-serif";
     ctx.fillStyle = "#2b2119";
-    ctx.fillText(`${(Number(bets[line.id]) || 0).toLocaleString()}`, betX + betW - 18, ly);
-    ly += rowH;
-  });
+    ctx.fillText(TIER_LABEL[tier], rightX + 18, panelY + 114);
+
+    ctx.font = "600 13px 'Inter', sans-serif";
+    ctx.fillStyle = "#2b2119";
+    ctx.fillText(`BINGO成立: ${result.bingoCount}本`, rightX + 18, panelY + 144);
+    ctx.fillText(`OPENING的中: ${result.openingHit ? "○" : "×"}　ENCORE的中: ${result.encoreHit ? "○" : "×"}`, rightX + 18, panelY + 166);
+
+    const bingoLabels = result.lineResults.filter((l) => l.status === "BINGO").map((l) => l.label);
+    ctx.font = "700 12px 'Inter', sans-serif";
+    ctx.fillStyle = "#9c8b76";
+    ctx.fillText("成立ライン", rightX + 18, panelY + 202);
+    ctx.font = "500 12px 'Inter', sans-serif";
+    ctx.fillStyle = "#2b2119";
+    wrapTextLeft(ctx, bingoLabels.length ? bingoLabels.join("・") : "なし", rightX + 18, panelY + 224, rightW - 36, 18, 8);
+  }
 
   ctx.textAlign = "center";
   ctx.font = "600 14px 'Inter', sans-serif";
