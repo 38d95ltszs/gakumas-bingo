@@ -8,24 +8,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
 
 :root {
-  --bg: #15121c;
-  --card: #211e2c;
-  --card-alt: #2a2638;
-  --front: #1c2a2c;
-  --back: #2a1f2e;
-  --gold: #f4c95d;
-  --teal: #43d9c0;
-  --pink: #ff5d8f;
-  --text: #f5f1e8;
-  --muted: #9c97ae;
-  --line: #3a3650;
+  --bg: #f2811b;
+  --card: #fbf3e4;
+  --card-alt: #f3e4cb;
+  --front: #fce9d3;
+  --back: #fbe0ec;
+  --gold: #e8791e;
+  --teal: #3fa672;
+  --pink: #ff5c8a;
+  --text: #2b2119;
+  --muted: #9c8b76;
+  --line: #e7d3b0;
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: linear-gradient(135deg, #fdb55a 0%, #f2811b 55%, #e85d0e 100%);
   color: var(--text);
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
@@ -88,8 +88,8 @@ button {
   padding: 10px 18px;
 }
 
-.btn-primary { background: var(--teal); color: #0c231f; }
-.btn-gold { background: var(--gold); color: #221a08; }
+.btn-primary { background: var(--teal); color: #16281f; }
+.btn-gold { background: var(--gold); color: #2b1608; }
 .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); font-weight: 400; }
 
 .error-text { color: var(--pink); font-size: 13px; margin: 10px 0; }
@@ -145,7 +145,7 @@ button {
 .cell.center { background: var(--card-alt); display: flex; align-items: center; justify-content: center; }
 .cell.special {
   border: 1.5px solid var(--gold);
-  box-shadow: 0 0 0 3px rgba(244,201,93,0.12);
+  box-shadow: 0 0 0 3px rgba(232,121,30,0.15);
 }
 .cell .tag {
   position: absolute; top: 4px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--gold);
@@ -204,7 +204,7 @@ button {
   border-radius: 6px;
   max-height: 140px;
   overflow-y: auto;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+  box-shadow: 0 8px 20px rgba(80,50,20,0.25);
 }
 .suggestion-item {
   padding: 5px 8px;
@@ -220,10 +220,18 @@ button {
 .cell .free-label { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--muted); }
 
 /* ---------- ベット ---------- */
+/* スマホ: 2列(横1-縦1、横2-縦2…とペアで並ぶ) */
 #bet-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px,1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
+}
+@media (min-width: 700px) {
+  /* PC: 5列(横1〜横5が1行、縦1〜縦5が次の行にまとまる) */
+  #bet-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .bet-row { order: var(--desktop-order, 0); }
 }
 .bet-row {
   background: var(--card); border: 1px solid var(--line); border-radius: 8px;
@@ -266,7 +274,7 @@ textarea#share-text-area { width: 100%; box-sizing: border-box; padding: 12px; r
       <p class="lede">IDとパスワードでログイン。初めての場合は新規登録してください。</p>
 
       <label for="auth-id">ID</label>
-      <input id="auth-id" type="text" autocomplete="username" placeholder="例: kawamu">
+      <input id="auth-id" type="text" autocomplete="username" placeholder="例: gakuen">
 
       <label for="auth-password">パスワード</label>
       <input id="auth-password" type="password" autocomplete="current-password" placeholder="8文字以上">
@@ -757,12 +765,19 @@ function renderBoard() {
   }
 }
 
+const DESKTOP_ORDER = {
+  row1: 1, row2: 2, row3: 3, row4: 4, row5: 5,
+  col1: 6, col2: 7, col3: 8, col4: 9, col5: 10,
+  diag1: 11, diag2: 12,
+};
+
 function renderBetGrid() {
   const grid = document.getElementById("bet-grid");
   grid.innerHTML = "";
   LINES.forEach((line) => {
     const row = document.createElement("div");
     row.className = "bet-row";
+    row.style.setProperty("--desktop-order", DESKTOP_ORDER[line.id]);
     const label = document.createElement("span");
     label.textContent = line.label;
     const input = document.createElement("input");
