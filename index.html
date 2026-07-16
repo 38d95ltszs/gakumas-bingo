@@ -623,6 +623,8 @@ function scoreTier(finalTotal) {
   return "low";
 }
 const TIER_LABEL = { champion: "🏆 優勝", high: "⭐ 高い", normal: "🙂 ふつう", low: "😢 低い" };
+// キャラ設定のテキストが組めるまで、アイドルのセリフ表示は一時的にオフにする
+const SHOW_IDOL_MESSAGES = false;
 
 // ---------------- 状態 ----------------
 let currentUser = null;       // {id, label}
@@ -1058,7 +1060,7 @@ function renderIdolSelect() {
 function updateIdolMessage() {
   const bubble = document.getElementById("idol-message-bubble");
   const el = document.getElementById("idol-message");
-  if (!selectedIdol) { bubble.classList.add("hidden"); return; }
+  if (!SHOW_IDOL_MESSAGES || !selectedIdol) { bubble.classList.add("hidden"); return; }
   el.textContent = pickMessage(IDOL_SELECT_MESSAGES, selectedIdol);
   bubble.classList.remove("hidden");
 }
@@ -1326,7 +1328,7 @@ function updateConfirmState() {
     note.textContent = setlistReady
       ? ""
       : "確定済みです。ライブ後、管理者が正解セトリを登録すると自動的に採点され、ランキングに反映されます。";
-    if (!msgEl.textContent) msgEl.textContent = pickMessage(CONFIRM_MESSAGES, selectedIdol);
+    if (SHOW_IDOL_MESSAGES && !msgEl.textContent) msgEl.textContent = pickMessage(CONFIRM_MESSAGES, selectedIdol);
   } else {
     btn.classList.remove("hidden");
     btn.disabled = false;
@@ -1432,7 +1434,7 @@ document.getElementById("confirm-btn").addEventListener("click", async () => {
   renderDeadlineBanner();
   setInputsDisabled(true);
   updateConfirmState();
-  document.getElementById("confirm-message").textContent = pickMessage(CONFIRM_MESSAGES, selectedIdol);
+  document.getElementById("confirm-message").textContent = SHOW_IDOL_MESSAGES ? pickMessage(CONFIRM_MESSAGES, selectedIdol) : "";
   tryAutoScore();
 });
 
@@ -1472,7 +1474,7 @@ function renderResult() {
     <div class="final-total"><span class="label">最終ジュエル</span><span class="value">${result.finalTotal.toLocaleString()}</span></div>
     <div style="margin-top:14px; text-align:right;">
       <span class="mono-font" style="font-size:11px; color:var(--muted); margin-right:8px;">${TIER_LABEL[scoreTier(result.finalTotal)]}</span>
-      <span style="font-size:13px; color:var(--gold); font-style:italic;">${pickMessage(SCORE_TIER_MESSAGES[scoreTier(result.finalTotal)], selectedIdol)}</span>
+      ${SHOW_IDOL_MESSAGES ? `<span style="font-size:13px; color:var(--gold); font-style:italic;">${pickMessage(SCORE_TIER_MESSAGES[scoreTier(result.finalTotal)], selectedIdol)}</span>` : ""}
     </div>`;
 }
 
@@ -1766,5 +1768,3 @@ document.getElementById("delete-event-btn").addEventListener("click", async () =
   await loadEvents();
 });
 </script>
-</body>
-</html>
