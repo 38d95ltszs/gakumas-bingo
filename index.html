@@ -461,16 +461,17 @@ td, th { padding: 6px; }
             <button id="save-btn-bet" class="btn-gold btn-sm">保存する</button>
             <span id="save-status-bet" class="ok-text hidden"></span>
           </div>
+        </div>
 
-          <div style="margin-top:28px; padding-top:20px; border-top:1px solid var(--line);">
-            <div id="confirm-error" class="error-text hidden"></div>
-            <div class="flex-gap" style="margin-bottom:14px;">
-              <button id="confirm-btn" class="btn-primary">確定する</button>
-              <button id="rescore-btn" class="btn-ghost btn-sm">再採点する</button>
-            </div>
-            <div id="confirm-note" class="note-text" style="margin-bottom:8px;"></div>
-            <div id="confirm-message" style="font-size:13px; color:var(--gold); font-style:italic;"></div>
+        <!-- 確定 -->
+        <div class="card">
+          <div id="confirm-error" class="error-text hidden"></div>
+          <div class="flex-gap" style="margin-bottom:14px;">
+            <button id="confirm-btn" class="btn-primary">確定する</button>
+            <button id="rescore-btn" class="btn-ghost btn-sm">再採点する</button>
           </div>
+          <div id="confirm-note" class="note-text" style="margin-bottom:8px;"></div>
+          <div id="confirm-message" style="font-size:13px; color:var(--gold); font-style:italic;"></div>
         </div>
 
         <!-- SNS共有 -->
@@ -636,11 +637,11 @@ const LINES = [
   { id: "col2", label: "縦2列目", idx: [1, 4, 7], mult: 4 },
   { id: "row3", label: "横3列目", idx: [6, 7, 8], mult: 8 },
   { id: "col3", label: "縦3列目", idx: [2, 5, 8], mult: 8 },
-  { id: "diag1", label: "斜め ↘", idx: [0, 4, 8], mult: 15 },
+  { id: "diag1", label: "斜め ↘", idx: [0, 4, 8], mult: 765 },
   { id: "diag2", label: "斜め ↙", idx: [2, 4, 6], mult: 4 },
 ];
 const BET_GROUPS = [
-  { id: "group15", label: "15倍の列", mult: 15, lineIds: ["diag1"] },
+  { id: "group765", label: "765倍の列", mult: 765, lineIds: ["diag1"] },
   { id: "group8", label: "8倍の列(4列まとめて)", mult: 8, lineIds: ["row1", "row3", "col1", "col3"] },
   { id: "group4", label: "4倍の列(3列まとめて)", mult: 4, lineIds: ["row2", "col2", "diag2"] },
 ];
@@ -711,7 +712,7 @@ const HELP_TEXTS = {
   },
   bet: {
     title: "夢に賭けるについて",
-    body: "8ライン個別にベットする代わりに、倍率でグループ化した3択でシンプルにベットできます: 「15倍の列」(斜め↘の1本)、「8倍の列」(横1・横3・縦1・縦3の4本まとめて)、「4倍の列」(横2・縦2・斜め↙の3本まとめて)。グループに入力した金額は、そのグループ内のライン数で自動的に均等分割される。合計がジュエル残高とぴったり同じになる必要があります。1ラインの3マス全部が的中(BINGO)すると、そのラインぶんのベットが倍率に応じて返ってきます。担当アイドルの曲がBINGOラインに含まれていると、マス1つにつきさらに2倍。正解登録後は、BINGO成立したラインの枠が光ります。",
+    body: "8ライン個別にベットする代わりに、倍率でグループ化した3択でシンプルにベットできます: 「765倍の列」(斜め↘の1本、OPENING・ENCORE両方必須で滅多に当たらない代わりに大化けする枠)、「8倍の列」(横1・横3・縦1・縦3の4本まとめて)、「4倍の列」(横2・縦2・斜め↙の3本まとめて)。グループに入力した金額は、そのグループ内のライン数で自動的に均等分割される。合計がジュエル残高とぴったり同じになる必要があります。1ラインの3マス全部が的中(BINGO)すると、そのラインぶんのベットが倍率に応じて返ってきます。担当アイドルの曲がBINGOラインに含まれていると、マス1つにつきさらに2倍。正解登録後は、BINGO成立したラインの枠が光ります。",
   },
   trend: {
     title: "トレンドについて",
