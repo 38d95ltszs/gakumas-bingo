@@ -112,6 +112,32 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .legend { display: flex; gap: 18px; align-items: center; margin-bottom: 10px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
 .swatch { width: 12px; height: 12px; border: 1px solid var(--line); border-radius: 3px; display: inline-block; margin-right: 6px; vertical-align: middle; }
 
+/* ---------- ユーザー設定 ---------- */
+.user-settings-row { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-end; }
+#username-input { width: 140px; }
+
+/* ---------- 吹き出し(担当アイドルのひとこと) ---------- */
+.speech-bubble {
+  position: relative; margin-top: 14px; padding: 10px 14px; background: var(--card-alt);
+  border: 1px solid var(--line); border-radius: 12px; max-width: 320px;
+  font-size: 13px; color: var(--gold); font-style: italic;
+}
+.speech-bubble::before {
+  content: ""; position: absolute; top: -8px; left: 24px;
+  border-width: 0 8px 8px 8px; border-style: solid;
+  border-color: transparent transparent var(--line) transparent;
+}
+.speech-bubble::after {
+  content: ""; position: absolute; top: -6px; left: 25px;
+  border-width: 0 7px 7px 7px; border-style: solid;
+  border-color: transparent transparent var(--card-alt) transparent;
+}
+
+/* ---------- BINGO成立ラインの強調表示 ---------- */
+.cell.bingo-glow { box-shadow: 0 0 0 3px var(--teal), 0 0 14px rgba(63,166,114,0.6); }
+.bet-row.bingo-glow { box-shadow: 0 0 0 2px var(--teal), 0 0 12px rgba(63,166,114,0.5); background: rgba(63,166,114,0.12); }
+.mini-cell.bingo-glow { background: var(--teal); box-shadow: 0 0 0 2px rgba(63,166,114,0.5); }
+
 /* ---------- ボード ---------- */
 #board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 28px; }
 .cell {
@@ -143,18 +169,18 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   .cell { aspect-ratio: 4 / 5; }
 }
 
-/* ---------- 曲名選択モーダル ---------- */
-#song-picker-backdrop {
+/* ---------- 汎用モーダル(曲名選択・正解セトリ表示で共用) ---------- */
+#song-picker-backdrop, #setlist-modal-backdrop {
   position: fixed; inset: 0; background: rgba(30,15,5,0.55); z-index: 200;
 }
-#song-picker-modal {
+#song-picker-modal, #setlist-modal {
   position: fixed; z-index: 201; background: var(--card); border: 1px solid var(--line);
   display: flex; flex-direction: column;
   left: 50%; top: 50%; transform: translate(-50%, -50%);
   width: min(420px, 92vw); max-height: 78vh; border-radius: 14px; padding: 16px;
 }
 @media (max-width: 700px) {
-  #song-picker-modal {
+  #song-picker-modal, #setlist-modal {
     left: 0; right: 0; top: auto; bottom: 0; transform: none;
     width: 100%; max-height: 75vh; border-radius: 16px 16px 0 0;
   }
@@ -315,38 +341,87 @@ textarea#share-text-area { width: 100%; box-sizing: border-box; padding: 12px; r
       <div id="tab-predict">
         <div id="deadline-banner" class="deadline-banner"></div>
 
-        <div class="card stat-row">
-          <div>
-            <div class="stat-label">現在のジュエル</div>
-            <div id="points-value" class="stat-value mono-font">10000</div>
+        <!-- ユーザー設定 -->
+        <div class="card">
+          <h2>ユーザー設定</h2>
+          <div class="user-settings-row">
+            <div>
+              <div class="stat-label" style="margin-bottom:4px;">ユーザー名</div>
+              <input id="username-input" type="text" maxlength="10" placeholder="表示名(10字まで)">
+            </div>
+            <div>
+              <div class="stat-label" style="margin-bottom:4px;">ひとこと</div>
+              <input id="comment-input" type="text" maxlength="60" placeholder="意気込みなど(60字まで)">
+            </div>
+            <div>
+              <div class="stat-label" style="margin-bottom:4px;">担当アイドル</div>
+              <select id="idol-select"></select>
+            </div>
           </div>
-          <div class="divider"></div>
-          <div>
-            <div class="stat-label">ベット合計</div>
-            <div id="bet-total-value" class="stat-value mono-font">3600</div>
-          </div>
-          <div id="bet-status" class="ok-text"></div>
-          <div class="divider"></div>
-          <div>
-            <div class="stat-label" style="margin-bottom:4px;">担当アイドル</div>
-            <select id="idol-select"></select>
-            <div id="idol-message" style="font-size:11px; color:var(--gold); margin-top:6px; max-width:160px; font-style:italic;"></div>
-          </div>
-          <div class="divider"></div>
-          <div>
-            <div class="stat-label" style="margin-bottom:4px;">ひとこと</div>
-            <input id="comment-input" type="text" maxlength="60" placeholder="意気込みなど(60字まで)">
+          <div id="idol-message-bubble" class="speech-bubble hidden">
+            <div id="idol-message"></div>
           </div>
         </div>
 
-        <div class="legend">
-          <div><span class="swatch" style="background:var(--front);"></span>前半予想(1〜12曲目)</div>
-          <div><span class="swatch" style="background:var(--back);"></span>後半予想(13〜24曲目)</div>
-          <div><span class="swatch" style="background:var(--card-alt);"></span>中央FREE(前半/後半の区切り)</div>
+        <!-- 正解登録後に表示 -->
+        <div id="after-setlist-section" class="hidden">
+          <div class="card">
+            <div class="flex-gap" style="justify-content:space-between;">
+              <h2 style="margin:0;">正解セトリが登録されました</h2>
+              <button id="open-setlist-modal-btn" class="btn-ghost btn-sm">正解セトリを見る</button>
+            </div>
+            <p class="lede" style="margin-top:8px;">確定済みの予想は自動的に採点されます。</p>
+          </div>
+          <div id="result-box" class="card hidden" style="border-color: var(--gold);"></div>
         </div>
 
-        <div id="board"></div>
+        <!-- セットリストビンゴ -->
+        <div class="card">
+          <h2>セットリストビンゴ</h2>
+          <div class="legend">
+            <div><span class="swatch" style="background:var(--front);"></span>前半予想(1〜12曲目)</div>
+            <div><span class="swatch" style="background:var(--back);"></span>後半予想(13〜24曲目)</div>
+            <div><span class="swatch" style="background:var(--card-alt);"></span>中央FREE(前半/後半の区切り)</div>
+          </div>
+          <div id="board"></div>
+          <p id="board-glow-note" class="note-text hidden">✨ 光っているラインはBINGO成立!</p>
+        </div>
 
+        <!-- ベット -->
+        <div class="card">
+          <h2>ベット</h2>
+          <div class="stat-row" style="margin-bottom:16px;">
+            <div>
+              <div class="stat-label">現在のジュエル</div>
+              <div id="points-value" class="stat-value mono-font">10000</div>
+            </div>
+            <div class="divider"></div>
+            <div>
+              <div class="stat-label">ベット合計</div>
+              <div id="bet-total-value" class="stat-value mono-font">3600</div>
+            </div>
+            <div id="bet-status" class="ok-text"></div>
+          </div>
+          <div class="line-indicator-wrap">
+            <div id="line-indicator-mini"></div>
+            <div id="line-indicator-label" class="note-text">ベット欄をタップすると、対応するラインがここに光ります</div>
+          </div>
+          <div id="bet-grid"></div>
+          <p id="bet-glow-note" class="note-text hidden" style="margin-top:10px;">✨ 光っている枠はBINGO成立ライン!</p>
+        </div>
+
+        <!-- アクション -->
+        <div id="confirm-error" class="error-text hidden"></div>
+        <div class="flex-gap" style="margin-bottom:14px;">
+          <button id="confirm-btn" class="btn-primary">確定する</button>
+          <button id="save-btn" class="btn-gold">保存する</button>
+          <button id="rescore-btn" class="btn-ghost btn-sm">再採点する</button>
+        </div>
+        <div id="confirm-note" class="note-text" style="margin-bottom:8px;"></div>
+        <div id="confirm-message" style="font-size:13px; color:var(--gold); font-style:italic; margin-bottom:20px;"></div>
+        <div id="save-status" class="ok-text hidden" style="margin-bottom:20px;"></div>
+
+        <!-- SNS共有 -->
         <div class="card">
           <div class="flex-gap" style="justify-content:space-between;">
             <h2>SNS共有用テキスト</h2>
@@ -362,32 +437,6 @@ textarea#share-text-area { width: 100%; box-sizing: border-box; padding: 12px; r
             </div>
           </div>
         </div>
-
-        <div class="card">
-          <h2>ライン別ベット</h2>
-          <div class="line-indicator-wrap">
-            <div id="line-indicator-mini"></div>
-            <div id="line-indicator-label" class="note-text">ベット欄をタップすると、対応するラインがここに光ります</div>
-          </div>
-          <div id="bet-grid"></div>
-        </div>
-
-        <div class="card">
-          <h2>正解セトリ</h2>
-          <div id="setlist-display"><p class="note-text">まだ登録されていません(大会終了後、管理者が登録します)。</p></div>
-        </div>
-
-        <div id="confirm-error" class="error-text hidden"></div>
-        <div class="flex-gap" style="margin-bottom:14px;">
-          <button id="confirm-btn" class="btn-primary">確定する</button>
-          <button id="save-btn" class="btn-gold">保存する</button>
-          <button id="rescore-btn" class="btn-ghost btn-sm">再採点する</button>
-        </div>
-        <div id="confirm-note" class="note-text" style="margin-bottom:8px;"></div>
-        <div id="confirm-message" style="font-size:13px; color:var(--gold); font-style:italic; margin-bottom:20px;"></div>
-        <div id="save-status" class="ok-text hidden" style="margin-bottom:20px;"></div>
-
-        <div id="result-box" class="card hidden" style="border-color: var(--gold);"></div>
       </div>
 
       <!-- ===== ランキングタブ ===== -->
@@ -464,6 +513,16 @@ textarea#share-text-area { width: 100%; box-sizing: border-box; padding: 12px; r
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- ===== 正解セトリ表示モーダル ===== -->
+  <div id="setlist-modal-backdrop" class="hidden"></div>
+  <div id="setlist-modal" class="hidden">
+    <div class="picker-header">
+      <span class="display-font" style="font-size:18px;">正解セトリ</span>
+      <button id="setlist-modal-close" class="btn-ghost btn-sm">閉じる</button>
+    </div>
+    <div id="setlist-modal-body" class="picker-list"></div>
   </div>
 
   <!-- ===== 曲名選択モーダル(検索ピッカー) ===== -->
@@ -578,6 +637,7 @@ LINES.forEach((l) => (bets[l.id] = DEFAULT_BET));
 let points = INITIAL_POINTS;
 let selectedIdol = "";
 let comment = "";
+let username = "";
 let result = null;
 let parsedCsvRows = null; // 管理タブでパース済みのCSV
 
@@ -878,6 +938,7 @@ async function loadGameSave() {
     points = typeof data.points === "number" ? data.points : INITIAL_POINTS;
     selectedIdol = data.selected_idol || (eventIdols[0] || "");
     comment = data.comment || "";
+    username = data.username || currentUser.label;
     confirmed = !!data.confirmed;
   } else {
     board = Array(25).fill(null);
@@ -885,6 +946,7 @@ async function loadGameSave() {
     points = INITIAL_POINTS;
     selectedIdol = eventIdols[0] || "";
     comment = "";
+    username = currentUser.label;
     confirmed = false;
   }
   result = null;
@@ -898,6 +960,7 @@ async function saveGame() {
     board, bets, points,
     selected_idol: selectedIdol,
     comment,
+    username,
     updated_at: new Date().toISOString(),
   });
   if (error) {
@@ -938,6 +1001,7 @@ function isFinalized() { return confirmed || isLocked; }
 
 function renderPredictTab() {
   renderDeadlineBanner();
+  renderUsernameInput();
   renderIdolSelect();
   renderCommentInput();
   renderBoard();
@@ -968,6 +1032,7 @@ function setInputsDisabled(disabled) {
   document.querySelectorAll("#bet-grid input").forEach((el) => (el.disabled = disabled));
   document.getElementById("idol-select").disabled = disabled;
   document.getElementById("comment-input").disabled = disabled;
+  document.getElementById("username-input").disabled = disabled;
 }
 
 function renderIdolSelect() {
@@ -986,14 +1051,22 @@ function renderIdolSelect() {
   updateIdolMessage();
 }
 function updateIdolMessage() {
+  const bubble = document.getElementById("idol-message-bubble");
   const el = document.getElementById("idol-message");
+  if (!selectedIdol) { bubble.classList.add("hidden"); return; }
   el.textContent = pickMessage(IDOL_SELECT_MESSAGES, selectedIdol);
+  bubble.classList.remove("hidden");
 }
 
 function renderCommentInput() {
   const input = document.getElementById("comment-input");
   input.value = comment;
   input.oninput = (e) => { comment = e.target.value; };
+}
+function renderUsernameInput() {
+  const input = document.getElementById("username-input");
+  input.value = username;
+  input.oninput = (e) => { username = e.target.value.slice(0, 10); };
 }
 
 function createSongCell(i, special) {
@@ -1070,16 +1143,28 @@ document.getElementById("song-picker-search").addEventListener("input", (e) => r
 document.getElementById("song-picker-close").addEventListener("click", closeSongPicker);
 document.getElementById("song-picker-backdrop").addEventListener("click", closeSongPicker);
 
+function bingoGlowIndices() {
+  const set = new Set();
+  if (result) {
+    result.lineResults.forEach((l) => {
+      if (l.status === "BINGO") l.idx.forEach((i) => set.add(i));
+    });
+  }
+  return set;
+}
+
 function renderBoard() {
   const boardEl = document.getElementById("board");
   boardEl.innerHTML = "";
+  const glowSet = bingoGlowIndices();
+  document.getElementById("board-glow-note").classList.toggle("hidden", glowSet.size === 0);
   for (let i = 0; i < 25; i++) {
     const group = groupOf(i);
     const isCenter = i === 12, isOpening = i === 0, isEncore = i === 24;
     const special = isOpening || isEncore;
 
     const cell = document.createElement("div");
-    cell.className = "cell " + (isCenter ? "center" : group) + (special ? " special" : "");
+    cell.className = "cell " + (isCenter ? "center" : group) + (special ? " special" : "") + (glowSet.has(i) ? " bingo-glow" : "");
 
     if (special) {
       const tag = document.createElement("div");
@@ -1125,9 +1210,11 @@ function renderBetGrid() {
   const grid = document.getElementById("bet-grid");
   grid.innerHTML = "";
   renderLineIndicatorMini();
+  const bingoLineIds = new Set(result ? result.lineResults.filter((l) => l.status === "BINGO").map((l) => l.id) : []);
+  document.getElementById("bet-glow-note").classList.toggle("hidden", bingoLineIds.size === 0);
   LINES.forEach((line) => {
     const row = document.createElement("div");
-    row.className = "bet-row";
+    row.className = "bet-row" + (bingoLineIds.has(line.id) ? " bingo-glow" : "");
     row.style.setProperty("--desktop-order", DESKTOP_ORDER[line.id]);
     const label = document.createElement("span");
     label.textContent = line.label;
@@ -1184,11 +1271,11 @@ function updatePointsAndBetTotal() {
 }
 
 function renderSetlistDisplay() {
-  const el = document.getElementById("setlist-display");
-  if (!eventSetlist || eventSetlist.length === 0) {
-    el.innerHTML = '<p class="note-text">まだ登録されていません(大会終了後、管理者が登録します)。</p>';
-    return;
-  }
+  const section = document.getElementById("after-setlist-section");
+  const setlistReady = eventSetlist && eventSetlist.length > 0;
+  section.classList.toggle("hidden", !setlistReady);
+  if (!setlistReady) return;
+
   const total = eventSetlist.length;
   const mid = Math.ceil(total / 2);
   const front = eventSetlist.slice(0, mid);
@@ -1199,13 +1286,25 @@ function renderSetlistDisplay() {
       .map((e, i) => `<li style="color:${(highlightFirst && i === 0) || (highlightLast && i === entries.length - 1) ? "var(--gold)" : "var(--muted)"};">${e.song} <span style="opacity:0.7;">(${(e.members || []).join("・")})</span></li>`)
       .join("")}</ol>`;
   }
-  el.innerHTML = `
+  document.getElementById("setlist-modal-body").innerHTML = `
     <p class="note-text" style="margin-bottom:10px;">全${total}曲(OPENING/ENCORE判定は1曲目・${total}曲目)</p>
     <div class="setlist-cols">
       <div><div class="col-title">前半(1〜${mid}曲目)</div>${listHtml(front, 1, true, false)}</div>
       <div><div class="col-title">後半(${mid + 1}〜${total}曲目)</div>${listHtml(back, mid + 1, false, true)}</div>
     </div>`;
 }
+
+function openSetlistModal() {
+  document.getElementById("setlist-modal-backdrop").classList.remove("hidden");
+  document.getElementById("setlist-modal").classList.remove("hidden");
+}
+function closeSetlistModal() {
+  document.getElementById("setlist-modal-backdrop").classList.add("hidden");
+  document.getElementById("setlist-modal").classList.add("hidden");
+}
+document.getElementById("open-setlist-modal-btn").addEventListener("click", openSetlistModal);
+document.getElementById("setlist-modal-close").addEventListener("click", closeSetlistModal);
+document.getElementById("setlist-modal-backdrop").addEventListener("click", closeSetlistModal);
 
 function updateConfirmState() {
   const btn = document.getElementById("confirm-btn");
@@ -1278,21 +1377,23 @@ function computeScore() {
 // 確定済み(自分でボタンを押した、または締切を迎えた)かつ正解セトリが登録され次第、自動で採点してランキングに反映する
 async function tryAutoScore() {
   if (!isFinalized()) { result = null; renderResult(); return; }
-  if (!eventSetlist || eventSetlist.length !== 24) { result = null; renderResult(); return; }
+  if (!eventSetlist || eventSetlist.length === 0) { result = null; renderResult(); return; }
 
   result = computeScore();
   points = result.finalTotal;
+  renderBoard();
+  renderBetGrid();
   renderResult();
   updatePointsAndBetTotal();
 
   await supabase.from("game_saves").upsert({
     event_id: selectedEvent.id, user_id: currentUser.id,
-    board, bets, points, selected_idol: selectedIdol, comment,
+    board, bets, points, selected_idol: selectedIdol, comment, username,
     confirmed: true, updated_at: new Date().toISOString(),
   });
   await supabase.from("results").upsert({
     event_id: selectedEvent.id, user_id: currentUser.id,
-    username: currentUser.label, selected_idol: selectedIdol, comment,
+    username: username || currentUser.label, selected_idol: selectedIdol, comment,
     total_points: result.finalTotal, bingo_count: result.bingoCount, confirmed_at: new Date().toISOString(),
   });
 }
@@ -1319,7 +1420,7 @@ document.getElementById("confirm-btn").addEventListener("click", async () => {
   confirmed = true;
   await supabase.from("game_saves").upsert({
     event_id: selectedEvent.id, user_id: currentUser.id,
-    board, bets, points, selected_idol: selectedIdol, comment,
+    board, bets, points, selected_idol: selectedIdol, comment, username,
     confirmed: true, updated_at: new Date().toISOString(),
   });
 
@@ -1533,104 +1634,3 @@ document.getElementById("csv-submit-btn").addEventListener("click", async () => 
   statusEl.textContent = "✓ 正解セトリを登録しました";
   statusEl.classList.remove("hidden");
   await loadEventSetlist();
-  renderSetlistDisplay();
-  updateConfirmState();
-  tryAutoScore();
-});
-
-document.getElementById("edit-deadline-btn").addEventListener("click", async () => {
-  const val = document.getElementById("edit-deadline-input").value;
-  const statusEl = document.getElementById("edit-deadline-status");
-  if (!val) return;
-  const { error } = await supabase.from("events").update({ deadline: new Date(val).toISOString() }).eq("id", selectedEvent.id);
-  if (error) { statusEl.textContent = "更新に失敗しました: " + error.message; statusEl.classList.remove("hidden"); return; }
-  selectedEvent.deadline = new Date(val).toISOString();
-  isLocked = new Date() >= new Date(selectedEvent.deadline);
-  statusEl.textContent = "✓ 締切を更新しました";
-  statusEl.classList.remove("hidden");
-  renderDeadlineBanner();
-  updateConfirmState();
-  await loadEvents();
-});
-
-// ---- 候補曲リストの再登録 ----
-document.getElementById("songs-csv-file").addEventListener("change", (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => { document.getElementById("songs-csv-text").value = reader.result; };
-  reader.readAsText(file, "utf-8");
-});
-document.getElementById("songs-csv-submit-btn").addEventListener("click", async () => {
-  const errEl = document.getElementById("songs-csv-error");
-  const statusEl = document.getElementById("songs-csv-status");
-  errEl.classList.add("hidden"); statusEl.classList.add("hidden");
-
-  const songs = parseListCsv(document.getElementById("songs-csv-text").value, ["曲名", "song"]);
-  if (songs.length === 0) {
-    errEl.textContent = "曲名を1つ以上入力してください。";
-    errEl.classList.remove("hidden");
-    return;
-  }
-  const { error: delError } = await supabase.from("event_songs").delete().eq("event_id", selectedEvent.id);
-  if (delError) { errEl.textContent = "更新に失敗しました: " + delError.message; errEl.classList.remove("hidden"); return; }
-  const { error: insError } = await supabase.from("event_songs").insert(songs.map((song) => ({ event_id: selectedEvent.id, song })));
-  if (insError) { errEl.textContent = "更新に失敗しました: " + insError.message; errEl.classList.remove("hidden"); return; }
-
-  await loadEventSongs();
-  document.getElementById("songs-count").textContent = eventSongs.length;
-  statusEl.textContent = `✓ 候補曲リストを更新しました(${eventSongs.length}曲)`;
-  statusEl.classList.remove("hidden");
-});
-
-// ---- 担当アイドル一覧の再登録 ----
-document.getElementById("idols-csv-file").addEventListener("change", (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => { document.getElementById("idols-csv-text").value = reader.result; };
-  reader.readAsText(file, "utf-8");
-});
-document.getElementById("idols-csv-submit-btn").addEventListener("click", async () => {
-  const errEl = document.getElementById("idols-csv-error");
-  const statusEl = document.getElementById("idols-csv-status");
-  errEl.classList.add("hidden"); statusEl.classList.add("hidden");
-
-  const idols = parseListCsv(document.getElementById("idols-csv-text").value, ["氏名(漢字)", "氏名", "アイドル名", "アイドル", "idol", "name"]);
-  if (idols.length === 0) {
-    errEl.textContent = "アイドル名を1人以上入力してください。";
-    errEl.classList.remove("hidden");
-    return;
-  }
-  const { error: delError } = await supabase.from("event_idols").delete().eq("event_id", selectedEvent.id);
-  if (delError) { errEl.textContent = "更新に失敗しました: " + delError.message; errEl.classList.remove("hidden"); return; }
-  const { error: insError } = await supabase.from("event_idols").insert(idols.map((idol) => ({ event_id: selectedEvent.id, idol })));
-  if (insError) { errEl.textContent = "更新に失敗しました: " + insError.message; errEl.classList.remove("hidden"); return; }
-
-  await loadEventIdols();
-  document.getElementById("idols-count").textContent = eventIdols.length;
-  statusEl.textContent = `✓ 担当アイドル一覧を更新しました(${eventIdols.length}人)`;
-  statusEl.classList.remove("hidden");
-});
-
-// ---- 大会の削除 ----
-document.getElementById("delete-event-btn").addEventListener("click", async () => {
-  const errEl = document.getElementById("delete-event-error");
-  errEl.classList.add("hidden");
-  const ok = confirm(`「${selectedEvent.name}」を削除します。予想・ベット・正解セトリ・ランキングも全て消えます。元に戻せませんが、よろしいですか?`);
-  if (!ok) return;
-
-  const { error } = await supabase.from("events").delete().eq("id", selectedEvent.id);
-  if (error) {
-    errEl.textContent = "削除に失敗しました: " + error.message;
-    errEl.classList.remove("hidden");
-    return;
-  }
-  selectedEvent = null;
-  document.getElementById("event-content").classList.add("hidden");
-  document.getElementById("event-select").value = "";
-  await loadEvents();
-});
-</script>
-</body>
-</html>
