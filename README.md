@@ -26,6 +26,7 @@
 2. 「New project」でプロジェクトを作成(リージョンは Tokyo (ap-northeast-1) を推奨)
 3. 左メニュー **SQL Editor** を開き、`supabase-schema.sql` の中身を全部貼り付けて実行
    - すでに旧バージョンの `game_saves` テーブルがある場合は、先に `drop table if exists public.game_saves cascade;` を実行してから貼り付け直すとよい
+   - 既存プロジェクトに反映するだけの場合(テーブルは消したくない)は、スキーマ内の `alter table public.game_saves add column if not exists username text;` の行だけ実行すれば、新しく増えた「ユーザー名」列だけ追加できる
 4. 左メニュー **Authentication > Providers > Email** で **「Confirm email」をOFF**
 5. 左メニュー **Project Settings > API** で **Project URL** と **anon public key** を確認
 
