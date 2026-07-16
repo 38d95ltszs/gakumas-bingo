@@ -154,7 +154,6 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 /* ---------- BINGO成立ラインの強調表示 ---------- */
 .cell.bingo-glow { box-shadow: 0 0 0 3px var(--teal), 0 0 14px rgba(61,111,224,0.6); }
 .bet-row.bingo-glow { box-shadow: 0 0 0 2px var(--teal), 0 0 12px rgba(61,111,224,0.5); background: rgba(61,111,224,0.12); }
-.mini-cell.bingo-glow { background: var(--teal); box-shadow: 0 0 0 2px rgba(61,111,224,0.5); }
 
 /* ---------- ボード ---------- */
 #board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 28px; max-width: 420px; margin-left: auto; margin-right: auto; }
@@ -205,19 +204,13 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .picker-list .suggestion-item { padding: 10px 10px; font-size: 14px; border-radius: 6px; }
 .picker-list .suggestion-empty { padding: 10px; }
 
-/* ---------- ミニ盤インジケーター ---------- */
-.line-indicator-wrap { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
-#line-indicator-mini {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px;
-  width: 72px; height: 72px; flex-shrink: 0;
+/* ---------- ライン別ミニ盤(各ベット行に常時表示) ---------- */
+.row-mini-board {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px;
+  width: 30px; height: 30px; flex-shrink: 0;
 }
-.mini-cell {
-  border-radius: 2px; background: var(--card-alt); border: 1px solid var(--line);
-  transition: background 0.15s, box-shadow 0.15s;
-}
-.mini-cell.plain { background: var(--card-alt); }
-.mini-cell.highlight { background: var(--gold); box-shadow: 0 0 0 2px rgba(232,121,30,0.4); }
-#line-indicator-label { font-weight: 600; }
+.row-mini-cell { border-radius: 1px; background: var(--card-alt); border: 1px solid var(--line); }
+.row-mini-cell.filled { background: var(--gold); border-color: var(--gold); }
 
 /* ---------- ベット ---------- */
 #bet-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -226,7 +219,8 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   .bet-row { order: var(--desktop-order, 0); }
 }
 .bet-row { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; gap: 6px; min-width: 0; }
-.bet-row span { font-size: 13px; color: var(--muted); flex-shrink: 0; }
+.bet-row-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.bet-row-left span { font-size: 13px; color: var(--muted); flex-shrink: 0; display: flex; align-items: center; gap: 4px; }
 .bet-row input {
   flex: 1 1 50px; min-width: 50px; max-width: 90px; width: auto; text-align: right;
   padding: 6px 6px; font-size: 16px;
@@ -450,10 +444,6 @@ td, th { padding: 6px; }
             </div>
             <div id="bet-status" class="ok-text"></div>
           </div>
-          <div class="line-indicator-wrap">
-            <div id="line-indicator-mini"></div>
-            <div id="line-indicator-label" class="note-text">ベット欄をタップすると、対応するラインがここに光ります</div>
-          </div>
           <div id="bet-grid"></div>
           <p id="bet-glow-note" class="note-text hidden" style="margin-top:10px;">✨ 光っている枠はBINGO成立ライン!</p>
 
@@ -641,9 +631,9 @@ const LINES = [
   { id: "diag2", label: "斜め ↙", idx: [2, 4, 6], mult: 4 },
 ];
 const BET_GROUPS = [
-  { id: "group765", label: "765倍の列", mult: 765, lineIds: ["diag1"] },
-  { id: "group8", label: "8倍の列(4列まとめて)", mult: 8, lineIds: ["row1", "row3", "col1", "col3"] },
-  { id: "group4", label: "4倍の列(3列まとめて)", mult: 4, lineIds: ["row2", "col2", "diag2"] },
+  { id: "group765", label: "マスター", mult: 765, lineIds: ["diag1"] },
+  { id: "group8", label: "プロ", mult: 8, lineIds: ["row1", "row3", "col1", "col3"] },
+  { id: "group4", label: "レギュラー", mult: 4, lineIds: ["row2", "col2", "diag2"] },
 ];
 
 const INITIAL_POINTS = 12000;
@@ -1367,10 +1357,30 @@ function setGroupTotal(group, total) {
   group.lineIds.forEach((lineId) => { bets[lineId] = perLine; });
 }
 
+function groupCellSet(group) {
+  const cellSet = new Set();
+  group.lineIds.forEach((lineId) => {
+    const line = LINES.find((l) => l.id === lineId);
+    if (line) line.idx.forEach((i) => cellSet.add(i));
+  });
+  return cellSet;
+}
+
+function createGroupMiniBoard(group) {
+  const cellSet = groupCellSet(group);
+  const mini = document.createElement("div");
+  mini.className = "row-mini-board";
+  for (let i = 0; i < BOARD_SIZE; i++) {
+    const cell = document.createElement("div");
+    cell.className = "row-mini-cell" + (cellSet.has(i) ? " filled" : "");
+    mini.appendChild(cell);
+  }
+  return mini;
+}
+
 function renderBetGrid() {
   const grid = document.getElementById("bet-grid");
   grid.innerHTML = "";
-  renderLineIndicatorMini();
   const bingoLineIds = new Set(result ? result.lineResults.filter((l) => l.status === "BINGO").map((l) => l.id) : []);
   document.getElementById("bet-glow-note").classList.toggle("hidden", bingoLineIds.size === 0);
   BET_GROUPS.forEach((group, i) => {
@@ -1378,8 +1388,14 @@ function renderBetGrid() {
     const row = document.createElement("div");
     row.className = "bet-row" + (isGroupBingo ? " bingo-glow" : "");
     row.style.setProperty("--desktop-order", i + 1);
+
+    const left = document.createElement("div");
+    left.className = "bet-row-left";
+    left.appendChild(createGroupMiniBoard(group));
     const label = document.createElement("span");
-    label.innerHTML = `${group.label} <span class="mono-font" style="color:var(--gold); font-size:11px;">×${group.mult}</span>`;
+    label.innerHTML = `${group.label}<span class="mono-font" style="color:var(--gold); font-size:11px;">[×${group.mult}]</span>`;
+    left.appendChild(label);
+
     const input = document.createElement("input");
     input.type = "number"; input.min = "0"; input.step = "100"; input.value = groupTotal(group);
     input.addEventListener("input", (e) => {
@@ -1387,9 +1403,7 @@ function renderBetGrid() {
       result = null;
       updatePointsAndBetTotal(); renderResult();
     });
-    input.addEventListener("focus", () => highlightGroup(group));
-    input.addEventListener("blur", () => highlightGroup(null));
-    row.appendChild(label); row.appendChild(input);
+    row.appendChild(left); row.appendChild(input);
     grid.appendChild(row);
   });
   setInputsDisabled(isLocked);
@@ -1426,36 +1440,6 @@ function randomDistributeBets() {
   renderResult();
 }
 document.getElementById("bet-random-btn").addEventListener("click", randomDistributeBets);
-
-function renderLineIndicatorMini() {
-  const mini = document.getElementById("line-indicator-mini");
-  mini.innerHTML = "";
-  for (let i = 0; i < BOARD_SIZE; i++) {
-    const cell = document.createElement("div");
-    cell.className = "mini-cell plain";
-    cell.dataset.miniIndex = i;
-    mini.appendChild(cell);
-  }
-}
-
-function highlightGroup(group) {
-  document.querySelectorAll(".mini-cell").forEach((el) => el.classList.remove("highlight"));
-  const label = document.getElementById("line-indicator-label");
-  if (!group) {
-    label.textContent = "ベット欄をタップすると、対応するラインがここに光ります";
-    return;
-  }
-  const cellSet = new Set();
-  group.lineIds.forEach((lineId) => {
-    const line = LINES.find((l) => l.id === lineId);
-    if (line) line.idx.forEach((i) => cellSet.add(i));
-  });
-  cellSet.forEach((i) => {
-    const el = document.querySelector(`.mini-cell[data-mini-index="${i}"]`);
-    if (el) el.classList.add("highlight");
-  });
-  label.textContent = `${group.label} を選択中`;
-}
 
 function updatePointsAndBetTotal() {
   document.getElementById("points-value").textContent = points.toLocaleString() + " ジュエル";
