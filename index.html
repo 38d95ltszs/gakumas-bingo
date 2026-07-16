@@ -967,16 +967,16 @@ async function loadStaticCatalogs() {
   try {
     const bust = Date.now();
     const [songsRes, castsRes] = await Promise.all([
-      fetch(`./songs.json?v=${bust}`, { cache: "no-store" }),
-      fetch(`./casts.json?v=${bust}`, { cache: "no-store" }),
+      fetch(`./songs-data.json?v=${bust}`, { cache: "no-store" }),
+      fetch(`./casts-data.json?v=${bust}`, { cache: "no-store" }),
     ]);
-    if (!songsRes.ok) throw new Error(`songs.json HTTP ${songsRes.status}`);
-    if (!castsRes.ok) throw new Error(`casts.json HTTP ${castsRes.status}`);
+    if (!songsRes.ok) throw new Error(`songs-data.json HTTP ${songsRes.status}`);
+    if (!castsRes.ok) throw new Error(`casts-data.json HTTP ${castsRes.status}`);
     eventSongs = await songsRes.json();
     eventIdols = await castsRes.json();
     catalogsLoaded = true;
   } catch (e) {
-    console.error("候補曲/担当アイドルの読み込みに失敗しました(songs.json / casts.json)", e);
+    console.error("候補曲/担当アイドルの読み込みに失敗しました(songs-data.json / casts-data.json)", e);
     eventSongs = eventSongs.length ? eventSongs : [];
     eventIdols = eventIdols.length ? eventIdols : [];
   }
