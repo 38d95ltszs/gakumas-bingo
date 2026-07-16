@@ -1,74 +1,89 @@
-# 学園セトリ予想ビンゴ
+# セトリ予想ビンゴ(複数大会・ランキング対応版)
 
-セットリスト予想ビンゴゲーム。ID+パスワードでログインし、予想内容・ベット・持ち点はSupabaseに保存されて次回続きから再開できる。
+セットリスト予想ビンゴゲーム。複数の「大会」をプルダウンで選び、大会ごとに予想・ベット・確定・ランキングができる。
 
-ビルド不要の素のHTML/CSS/JavaScript。GitHub Pagesでそのまま公開できる。
+ビルド不要の素のHTML/CSS/JavaScript(単一ファイル)。GitHub Pagesでそのまま公開できる。
+
+## できること
+
+- **予想タブ**: 5×5マスにセトリ予想、12ラインにベット、担当アイドル・ひとことを入力
+- **確定ボタン**: 締切前でも任意のタイミングで押せる(押すと予想内容がロックされる)。押さなくても締切時刻を迎えると自動的に確定扱いになる
+- **自動採点**: 確定済み(自分で押した、または締切到来)の状態で、管理者が正解セトリを登録すると自動的に採点され、ランキングに反映される。ライブ後のセトリ登録には時間がかかる想定のため、確定と採点のタイミングを分離している
+- **ランキングタブ**: 大会参加者全員の確定結果を、総合点順に一覧表示(順位・ユーザー名・担当アイドル・総合点・ビンゴ本数・ひとこと)
+- **管理タブ**: その大会の作成者だけがアクセスできる。正解セトリ(曲名+担当アイドル)をCSVで登録。締切時間の変更も可能
+
+## 大会ごとに登録する3種類のCSV
+
+1. **候補曲リスト**(1行1曲、100曲程度を想定) — 大会作成時に登録。予想入力(曲名検索)の選択肢になる
+2. **担当アイドル一覧**(1行1人、14人程度を想定) — 大会作成時に登録。「担当アイドル」の選択肢になる
+3. **正解セトリ**(曲名+担当アイドル、30曲程度を想定) — ライブ終了後、管理者が「管理」タブから手動アップロード。採点の答え合わせに使う
+
+1・2は大会作成フォームの中で登録し、3は管理タブから別途登録する(タイミングが異なるため)。
 
 ## 1. Supabaseプロジェクトを作る
 
 1. https://supabase.com にログイン(なければアカウント作成)
 2. 「New project」でプロジェクトを作成(リージョンは Tokyo (ap-northeast-1) を推奨)
-3. 作成後、左メニュー **SQL Editor** を開き、このリポジトリの `supabase-schema.sql` の中身を全部貼り付けて実行
-4. 左メニュー **Authentication > Providers > Email** を開き、**「Confirm email」をOFF** にする
-   (このアプリはIDを疑似メールアドレスに変換してログインさせるため、実際には届かない確認メールを待つ設定のままだとサインアップ後にログインできなくなる)
-5. 左メニュー **Project Settings > API** を開き、以下をメモする
-   - **Project URL**(例: `https://abcdefgh.supabase.co`)
-   - **anon public key**(長い文字列)
+3. 左メニュー **SQL Editor** を開き、`supabase-schema.sql` の中身を全部貼り付けて実行
+   - すでに旧バージョンの `game_saves` テーブルがある場合は、先に `drop table if exists public.game_saves cascade;` を実行してから貼り付け直すとよい
+4. 左メニュー **Authentication > Providers > Email** で **「Confirm email」をOFF**
+5. 左メニュー **Project Settings > API** で **Project URL** と **anon public key** を確認
 
 ## 2. Supabaseの接続情報を書き込む
 
-`index.html` の中盤にある `<script type="module">` 内、以下の部分を書き換える。
+`index.html` 内、`<script type="module">` の先頭付近にある以下を書き換える。
 
 ```js
-// ▼▼▼ ここをSupabaseプロジェクトの値に書き換えてください ▼▼▼
 const SUPABASE_URL = "あなたのプロジェクトURL";
 const SUPABASE_ANON_KEY = "あなたのanon key";
-const FAKE_EMAIL_DOMAIN = "gakumas-bingo.local";
-// ▲▲▲ ここまで ▲▲▲
+const SUPER_ADMIN_LOGIN_ID = "gakuen"; // 大会を作成できる管理者のログインID
 ```
 
-> **anon keyはpublicで問題ない値です**(Supabaseの設計上、フロントエンドに埋め込む前提のキー)。
-> データの保護は `supabase-schema.sql` で設定した RLS(Row Level Security)ポリシーが担っている
-> ( = 自分の行しか読み書きできない)。GitHubにそのままコミットして問題ない。
+`SUPER_ADMIN_LOGIN_ID` は「＋ 新しい大会を作る」ボタンを表示する対象のログインID。現状は1人だけに限定する運用のため、自分のログインIDに書き換えておくこと。将来的に誰でも大会を作れるようにする場合は、この判定を外せばよい(該当箇所はコード内にコメントあり)。
+
+> anon keyはpublicで問題ない値(Supabase設計上、フロントエンドに埋め込む前提のキー)。データの保護は `supabase-schema.sql` のRLS(Row Level Security)が担っている。
 
 ## 3. GitHubにアップロードする
-
-既存のリポジトリを使う場合:
 
 ```bash
 cd gakumas-bingo
 git init
 git remote add origin https://github.com/38d95ltszs/gakumas-bingo.git
 git add .
-git commit -m "学園セトリ予想ビンゴを追加"
+git commit -m "複数大会・ランキング・管理者機能を追加"
 git branch -M main
 git push -u origin main
 ```
 
-すでにリポジトリがある場合は `git remote add` を省略し、既存リポジトリのディレクトリにこれらのファイルをコピーしてから `git add / commit / push` すればよい。
+すでにpush済みのリポジトリなら、`git add . && git commit -m "update" && git push` でOK。
 
 ## 4. GitHub Pagesを有効化する
 
-1. GitHubのリポジトリページ > **Settings > Pages**
-2. **Source** を `Deploy from a branch` にし、ブランチを `main` / フォルダを `/(root)`(またはこれらのファイルを置いたフォルダ)に設定
-3. 数分後、`https://38d95ltszs.github.io/gakumas-bingo/` で公開される
+Settings > Pages で Source を `Deploy from a branch` / ブランチ `main` / フォルダ `/(root)` にする。
+公開URL: `https://38d95ltszs.github.io/gakumas-bingo/`(すでに有効化済みならそのまま反映される)
 
-## 5. Supabase側にPagesのURLを登録
+## 大会の使い方
 
-Supabase > Authentication > URL Configuration で、上記のGitHub PagesのURLを **Site URL** に追加しておく(認証まわりのリダイレクトで使われる場合に備えて)。
+1. `SUPER_ADMIN_LOGIN_ID` に指定したIDでログインし、「＋ 新しい大会を作る」で大会名・開催日・締切に加えて「候補曲リスト」「担当アイドル一覧」の2つのCSVを入力して作成する
+2. 作成した大会はプルダウンに表示され、誰でも選んで予想に参加できる
+3. 参加者は予想がまとまったら「確定する」を押す(締切前でもOK)。押さなければ締切時刻になった時点で自動的に確定扱いになる
+4. ライブ終了後、大会作成者(管理者)は「管理」タブから正解セトリのCSVを登録する
+   - CSV形式: 1行1曲、「曲名,担当アイドル」の2列。1行目が1曲目(OPENING判定)、最終行が最後の曲(ENCORE判定)になるよう上から順に並べる(30曲程度でもよいが、判定に使うのは先頭〜24行目まで)
+   - 担当アイドルが複数いる場合は `/` 区切り(例: `きらめきステップ,陽向ひまり/小鳥遊そら`)
+   - ヘッダー行(1列目が「曲名」または「song」)があっても自動で無視される
+   - 現状、曲名・アイドル名にカンマを含む場合には対応していない
+5. 正解セトリが登録されると、確定済みの参加者は次にアプリを開いた時(または管理者がその場でCSVを登録した時)に自動で採点され、ランキングに反映される。うまく反映されない場合は予想タブの「再採点する」ボタンで手動で再計算できる
 
 ## ファイル構成
 
 ```
-index.html          画面・見た目・ロジックすべてを含む単一ファイル
-                     (★中盤のSupabase接続情報だけ書き換える)
-supabase-schema.sql  Supabaseに流し込むテーブル定義・RLS設定
+index.html           画面・見た目・ロジックすべてを含む単一ファイル
+                      (★中盤のSupabase接続情報とSUPER_ADMIN_LOGIN_IDだけ書き換える)
+supabase-schema.sql   Supabaseに流し込むテーブル定義・RLS設定(events/event_setlists/game_saves/results)
 ```
 
-## 動作の仕組みメモ
+## 補足・今後の拡張余地
 
-- ID+パスワードは内部で `ID@gakumas-bingo.local` という疑似メールアドレスに変換してSupabase Authに渡している(実在ドメインではないので確認メールは届かない → Confirm emailをOFFにする必要がある)
-- ボード内容・ベット配分・担当アイドル・持ち点は `game_saves` テーブルに1ユーザー1行で保存される
-- 「判定する」を押すと、その時点の持ち点をもとに演算し、結果を新しい持ち点として保存する
-- 「新しいラウンドを始める」は、持ち点はそのままにボード・ベット・正解セトリだけをリセットする(次の公演の予想を始めるときに使う)
-- 楽曲リスト・担当アイドルはすべてテスト用のダミーデータ。実際のセトリ候補曲・歌唱メンバーに差し替える場合は `index.html` 内の `SONG_POOL` / `IDOL_POOL` を編集する
+- 「予想入力の候補曲リスト(`SONG_POOL`)」と「担当アイドル選択肢(`IDOL_POOL`)」は、まだ全大会共通のダミーデータ。大会ごとに候補曲を変えたい場合は別途対応が必要(現状は正解セトリ用CSVとは別物)
+- 大会の削除・編集(締切以外)のUIは未実装。必要な場合はSupabaseのテーブルエディタから直接操作可能
+- 現状は大会作成者=その大会唯一の管理者。複数人で管理したい場合はテーブル設計の拡張が必要
