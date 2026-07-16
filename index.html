@@ -125,25 +125,61 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .cell .tag { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--gold); letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace; z-index: 2; }
 .cell .half-tag { position: absolute; top: 3px; left: 5px; font-size: 8px; color: var(--muted); font-family: 'JetBrains Mono', monospace; z-index: 2; }
 
-.combo-wrap { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 3px; }
-.song-search { width: 100%; font-size: 10px; padding: 2px 4px; height: 20px; flex-shrink: 0; }
+.combo-wrap { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .song-display {
   flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; text-align: center;
-  font-size: 10.5px; line-height: 1.25; color: var(--text); overflow-wrap: anywhere; word-break: break-word;
-  padding: 2px 4px; position: relative;
+  font-size: 11px; line-height: 1.3; color: var(--text); overflow-wrap: anywhere; word-break: break-word;
+  padding: 2px 4px; position: relative; cursor: pointer; border-radius: 6px;
 }
+.song-display:active { background: rgba(0,0,0,0.05); }
 .song-display.empty { color: var(--muted); font-style: italic; }
-.song-display .clear-btn { position: absolute; top: 0; right: 0; background: none; border: none; color: var(--muted); font-size: 12px; line-height: 1; padding: 2px 4px; font-weight: 400; }
+.song-display .clear-btn { position: absolute; top: 0; right: 0; background: none; border: none; color: var(--muted); font-size: 13px; line-height: 1; padding: 3px 5px; font-weight: 400; }
 .song-display .clear-btn:hover { color: var(--pink); }
-.song-suggestions {
-  position: absolute; top: 22px; left: 0; right: 0; z-index: 50; background: var(--card-alt);
-  border: 1px solid var(--line); border-radius: 6px; max-height: 140px; overflow-y: auto;
-  box-shadow: 0 8px 20px rgba(80,50,20,0.25);
-}
-.suggestion-item { padding: 5px 8px; font-size: 11px; cursor: pointer; white-space: normal; line-height: 1.3; }
-.suggestion-item:hover, .suggestion-item.active { background: var(--line); }
-.suggestion-empty { padding: 6px 8px; font-size: 11px; color: var(--muted); }
+#board.locked .song-display { cursor: default; pointer-events: none; }
+#board.locked .clear-btn { display: none; }
 .cell .free-label { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--muted); }
+
+@media (max-width: 700px) {
+  .cell { aspect-ratio: 4 / 5; }
+}
+
+/* ---------- 曲名選択モーダル ---------- */
+#song-picker-backdrop {
+  position: fixed; inset: 0; background: rgba(30,15,5,0.55); z-index: 200;
+}
+#song-picker-modal {
+  position: fixed; z-index: 201; background: var(--card); border: 1px solid var(--line);
+  display: flex; flex-direction: column;
+  left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: min(420px, 92vw); max-height: 78vh; border-radius: 14px; padding: 16px;
+}
+@media (max-width: 700px) {
+  #song-picker-modal {
+    left: 0; right: 0; top: auto; bottom: 0; transform: none;
+    width: 100%; max-height: 75vh; border-radius: 16px 16px 0 0;
+  }
+}
+.picker-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+#song-picker-search { width: 100%; font-size: 15px; padding: 10px 12px; margin-bottom: 10px; }
+.picker-list { overflow-y: auto; flex: 1; }
+.picker-list .suggestion-item { padding: 10px 10px; font-size: 14px; border-radius: 6px; }
+.picker-list .suggestion-empty { padding: 10px; }
+
+/* ---------- ミニ盤インジケーター ---------- */
+.line-indicator-wrap { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+#line-indicator-mini {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px;
+  width: 100px; height: 100px; flex-shrink: 0;
+}
+.mini-cell {
+  border-radius: 2px; background: var(--card-alt); border: 1px solid var(--line);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+.mini-cell.front { background: var(--front); }
+.mini-cell.back { background: var(--back); }
+.mini-cell.center { background: var(--card-alt); }
+.mini-cell.highlight { background: var(--gold); box-shadow: 0 0 0 2px rgba(232,121,30,0.4); }
+#line-indicator-label { font-weight: 600; }
 
 /* ---------- ベット ---------- */
 #bet-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -281,19 +317,20 @@ textarea#share-text-area { width: 100%; box-sizing: border-box; padding: 12px; r
 
         <div class="card stat-row">
           <div>
-            <div class="stat-label">現在の持ち点</div>
-            <div id="points-value" class="stat-value mono-font">150</div>
+            <div class="stat-label">現在のジュエル</div>
+            <div id="points-value" class="stat-value mono-font">10000</div>
           </div>
           <div class="divider"></div>
           <div>
             <div class="stat-label">ベット合計</div>
-            <div id="bet-total-value" class="stat-value mono-font">120</div>
+            <div id="bet-total-value" class="stat-value mono-font">3600</div>
           </div>
           <div id="bet-status" class="ok-text"></div>
           <div class="divider"></div>
           <div>
             <div class="stat-label" style="margin-bottom:4px;">担当アイドル</div>
             <select id="idol-select"></select>
+            <div id="idol-message" style="font-size:11px; color:var(--gold); margin-top:6px; max-width:160px; font-style:italic;"></div>
           </div>
           <div class="divider"></div>
           <div>
@@ -328,6 +365,10 @@ textarea#share-text-area { width: 100%; box-sizing: border-box; padding: 12px; r
 
         <div class="card">
           <h2>ライン別ベット</h2>
+          <div class="line-indicator-wrap">
+            <div id="line-indicator-mini"></div>
+            <div id="line-indicator-label" class="note-text">ベット欄をタップすると、対応するラインがここに光ります</div>
+          </div>
           <div id="bet-grid"></div>
         </div>
 
@@ -342,7 +383,8 @@ textarea#share-text-area { width: 100%; box-sizing: border-box; padding: 12px; r
           <button id="save-btn" class="btn-gold">保存する</button>
           <button id="rescore-btn" class="btn-ghost btn-sm">再採点する</button>
         </div>
-        <div id="confirm-note" class="note-text" style="margin-bottom:20px;"></div>
+        <div id="confirm-note" class="note-text" style="margin-bottom:8px;"></div>
+        <div id="confirm-message" style="font-size:13px; color:var(--gold); font-style:italic; margin-bottom:20px;"></div>
         <div id="save-status" class="ok-text hidden" style="margin-bottom:20px;"></div>
 
         <div id="result-box" class="card hidden" style="border-color: var(--gold);"></div>
@@ -424,6 +466,17 @@ textarea#share-text-area { width: 100%; box-sizing: border-box; padding: 12px; r
     </div>
   </div>
 
+  <!-- ===== 曲名選択モーダル(検索ピッカー) ===== -->
+  <div id="song-picker-backdrop" class="hidden"></div>
+  <div id="song-picker-modal" class="hidden">
+    <div class="picker-header">
+      <span id="song-picker-label" class="display-font" style="font-size:18px;"></span>
+      <button id="song-picker-close" class="btn-ghost btn-sm">閉じる</button>
+    </div>
+    <input id="song-picker-search" type="text" placeholder="曲名を検索…" autocomplete="off">
+    <div id="song-picker-list" class="picker-list"></div>
+  </div>
+
   <script type="module">
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -459,8 +512,54 @@ const DESKTOP_ORDER = {
   diag1: 11, diag2: 12,
 };
 
-const INITIAL_POINTS = 150;
-const DEFAULT_BET = 10;
+const INITIAL_POINTS = 10000;
+const DEFAULT_BET = 300;
+
+// ---- 担当アイドルの「ひとこと」メッセージ(汎用テンプレート。特定キャラの正確な口調再現ではなく、雰囲気重視) ----
+const IDOL_SELECT_MESSAGES = [
+  "{idol}「応援ありがとう!今日は一緒に頑張ろうね!」",
+  "{idol}「わたしを選んでくれて嬉しいな!」",
+  "{idol}「よーし、気合い入れていくよ!」",
+  "{idol}「一緒にビンゴ、当てちゃおう!」",
+];
+const CONFIRM_MESSAGES = [
+  "{idol}「予想確定だね!結果、楽しみにしてる!」",
+  "{idol}「いい感じの予想だと思うよ!」",
+  "{idol}「あとは結果を待つだけ!ドキドキするね」",
+  "{idol}「これで準備万端!当たるといいな」",
+];
+const SCORE_TIER_MESSAGES = {
+  champion: [
+    "{idol}「うそでしょ!?最高の結果だよ!!」",
+    "{idol}「やったー!大金星だね!」",
+    "{idol}「これはもう優勝だよ、おめでとう!」",
+  ],
+  high: [
+    "{idol}「なかなかやるね!いい結果だと思う!」",
+    "{idol}「上出来、上出来!この調子!」",
+  ],
+  normal: [
+    "{idol}「うーん、まずまずかな。次に期待!」",
+    "{idol}「悪くないよ、次はもっと当てよう!」",
+  ],
+  low: [
+    "{idol}「今回はちょっと残念…でも次があるよ!」",
+    "{idol}「どんまい!次のセトリ予想も一緒に頑張ろう!」",
+  ],
+};
+
+function pickMessage(pool, idol) {
+  if (!pool || pool.length === 0 || !idol) return "";
+  const t = pool[Math.floor(Math.random() * pool.length)];
+  return t.replace("{idol}", idol);
+}
+function scoreTier(finalTotal) {
+  if (finalTotal >= 30000) return "champion";
+  if (finalTotal >= 10000) return "high";
+  if (finalTotal >= 3000) return "normal";
+  return "low";
+}
+const TIER_LABEL = { champion: "🏆 優勝", high: "⭐ 高い", normal: "🙂 ふつう", low: "😢 低い" };
 
 // ---------------- 状態 ----------------
 let currentUser = null;       // {id, label}
@@ -865,7 +964,7 @@ function renderDeadlineBanner() {
 }
 
 function setInputsDisabled(disabled) {
-  document.querySelectorAll("#board select, #board input, #board button").forEach((el) => (el.disabled = disabled));
+  document.getElementById("board").classList.toggle("locked", disabled);
   document.querySelectorAll("#bet-grid input").forEach((el) => (el.disabled = disabled));
   document.getElementById("idol-select").disabled = disabled;
   document.getElementById("comment-input").disabled = disabled;
@@ -880,7 +979,15 @@ function renderIdolSelect() {
     if (name === selectedIdol) opt.selected = true;
     sel.appendChild(opt);
   });
-  sel.onchange = (e) => { selectedIdol = e.target.value; };
+  sel.onchange = (e) => {
+    selectedIdol = e.target.value;
+    updateIdolMessage();
+  };
+  updateIdolMessage();
+}
+function updateIdolMessage() {
+  const el = document.getElementById("idol-message");
+  el.textContent = pickMessage(IDOL_SELECT_MESSAGES, selectedIdol);
 }
 
 function renderCommentInput() {
@@ -889,17 +996,16 @@ function renderCommentInput() {
   input.oninput = (e) => { comment = e.target.value; };
 }
 
-function createSongCombobox(i, special) {
+function createSongCell(i, special) {
   const wrap = document.createElement("div");
   wrap.className = "combo-wrap";
-  wrap.style.marginTop = special ? "12px" : "10px";
-
-  const input = document.createElement("input");
-  input.type = "text"; input.className = "song-search"; input.placeholder = "検索…"; input.autocomplete = "off";
+  wrap.style.marginTop = special ? "14px" : "8px";
 
   const display = document.createElement("div");
   display.className = "song-display" + (board[i] ? "" : " empty");
-  display.textContent = board[i] || "未選択";
+  display.textContent = board[i] || "タップして選択";
+  display.addEventListener("click", () => openSongPicker(i));
+
   if (board[i]) {
     const clearBtn = document.createElement("button");
     clearBtn.className = "clear-btn"; clearBtn.textContent = "×"; clearBtn.title = "選択をクリア";
@@ -911,38 +1017,58 @@ function createSongCombobox(i, special) {
     display.appendChild(clearBtn);
   }
 
-  const suggestions = document.createElement("div");
-  suggestions.className = "song-suggestions hidden";
-
-  function renderSuggestions(query) {
-    suggestions.innerHTML = "";
-    const q = query.trim();
-    const matches = q ? eventSongs.filter((s) => s.toLowerCase().includes(q.toLowerCase())) : eventSongs;
-    if (matches.length === 0) {
-      const empty = document.createElement("div");
-      empty.className = "suggestion-empty"; empty.textContent = "該当する曲がありません";
-      suggestions.appendChild(empty);
-      return;
-    }
-    matches.forEach((song) => {
-      const item = document.createElement("div");
-      item.className = "suggestion-item"; item.textContent = song;
-      item.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-        board[i] = song; result = null;
-        renderBoard(); renderResult();
-      });
-      suggestions.appendChild(item);
-    });
-  }
-
-  input.addEventListener("focus", () => { renderSuggestions(input.value); suggestions.classList.remove("hidden"); });
-  input.addEventListener("input", () => { renderSuggestions(input.value); suggestions.classList.remove("hidden"); });
-  input.addEventListener("blur", () => { setTimeout(() => suggestions.classList.add("hidden"), 120); });
-
-  wrap.appendChild(input); wrap.appendChild(display); wrap.appendChild(suggestions);
+  wrap.appendChild(display);
   return wrap;
 }
+
+// ---- 曲名選択モーダル(検索ピッカー) ----
+let pickerCellIndex = null;
+function openSongPicker(i) {
+  if (isFinalized()) return;
+  pickerCellIndex = i;
+  const isOpening = i === 0, isEncore = i === 24;
+  const label = isOpening ? "1曲目(OPENING)を選択"
+    : isEncore ? "ラスト曲(ENCORE)を選択"
+    : (groupOf(i) === "front" ? "前半予想を選択" : "後半予想を選択");
+  document.getElementById("song-picker-label").textContent = label;
+  const searchInput = document.getElementById("song-picker-search");
+  searchInput.value = "";
+  renderPickerList("");
+  document.getElementById("song-picker-backdrop").classList.remove("hidden");
+  document.getElementById("song-picker-modal").classList.remove("hidden");
+  searchInput.focus();
+}
+function closeSongPicker() {
+  document.getElementById("song-picker-backdrop").classList.add("hidden");
+  document.getElementById("song-picker-modal").classList.add("hidden");
+  pickerCellIndex = null;
+}
+function renderPickerList(query) {
+  const listEl = document.getElementById("song-picker-list");
+  const q = query.trim().toLowerCase();
+  const matches = q ? eventSongs.filter((s) => s.toLowerCase().includes(q)) : eventSongs;
+  listEl.innerHTML = "";
+  if (matches.length === 0) {
+    listEl.innerHTML = '<div class="suggestion-empty">該当する曲がありません</div>';
+    return;
+  }
+  matches.forEach((song) => {
+    const item = document.createElement("div");
+    item.className = "suggestion-item";
+    item.textContent = song;
+    item.addEventListener("click", () => {
+      board[pickerCellIndex] = song;
+      result = null;
+      closeSongPicker();
+      renderBoard();
+      renderResult();
+    });
+    listEl.appendChild(item);
+  });
+}
+document.getElementById("song-picker-search").addEventListener("input", (e) => renderPickerList(e.target.value));
+document.getElementById("song-picker-close").addEventListener("click", closeSongPicker);
+document.getElementById("song-picker-backdrop").addEventListener("click", closeSongPicker);
 
 function renderBoard() {
   const boardEl = document.getElementById("board");
@@ -970,7 +1096,7 @@ function renderBoard() {
       label.className = "free-label"; label.textContent = "FREE";
       cell.appendChild(label);
     } else {
-      cell.appendChild(createSongCombobox(i, special));
+      cell.appendChild(createSongCell(i, special));
     }
 
     if (result && !isCenter) {
@@ -992,12 +1118,13 @@ function renderBoard() {
     }
     boardEl.appendChild(cell);
   }
-  setInputsDisabled(isLocked);
+  setInputsDisabled(isFinalized());
 }
 
 function renderBetGrid() {
   const grid = document.getElementById("bet-grid");
   grid.innerHTML = "";
+  renderLineIndicatorMini();
   LINES.forEach((line) => {
     const row = document.createElement("div");
     row.className = "bet-row";
@@ -1005,28 +1132,55 @@ function renderBetGrid() {
     const label = document.createElement("span");
     label.textContent = line.label;
     const input = document.createElement("input");
-    input.type = "number"; input.min = "0"; input.step = "5"; input.value = bets[line.id];
+    input.type = "number"; input.min = "0"; input.step = "100"; input.value = bets[line.id];
     input.addEventListener("input", (e) => {
       bets[line.id] = e.target.value === "" ? "" : Number(e.target.value);
       result = null;
       updatePointsAndBetTotal(); renderResult();
     });
+    input.addEventListener("focus", () => highlightLine(line));
+    input.addEventListener("blur", () => highlightLine(null));
     row.appendChild(label); row.appendChild(input);
     grid.appendChild(row);
   });
-  setInputsDisabled(isLocked);
+  setInputsDisabled(isFinalized());
+}
+
+function renderLineIndicatorMini() {
+  const mini = document.getElementById("line-indicator-mini");
+  mini.innerHTML = "";
+  for (let i = 0; i < 25; i++) {
+    const cell = document.createElement("div");
+    cell.className = "mini-cell " + groupOf(i);
+    cell.dataset.miniIndex = i;
+    mini.appendChild(cell);
+  }
+}
+
+function highlightLine(line) {
+  document.querySelectorAll(".mini-cell").forEach((el) => el.classList.remove("highlight"));
+  const label = document.getElementById("line-indicator-label");
+  if (!line) {
+    label.textContent = "ベット欄をタップすると、対応するラインがここに光ります";
+    return;
+  }
+  line.idx.forEach((i) => {
+    const el = document.querySelector(`.mini-cell[data-mini-index="${i}"]`);
+    if (el) el.classList.add("highlight");
+  });
+  label.textContent = `${line.label} を選択中`;
 }
 
 function updatePointsAndBetTotal() {
-  document.getElementById("points-value").textContent = points;
+  document.getElementById("points-value").textContent = points.toLocaleString() + " ジュエル";
   const total = Object.values(bets).reduce((s, v) => s + (Number(v) || 0), 0);
   const totalEl = document.getElementById("bet-total-value");
-  totalEl.textContent = total;
+  totalEl.textContent = total.toLocaleString() + " ジュエル";
   const statusEl = document.getElementById("bet-status");
   const diff = points - total;
   totalEl.style.color = diff === 0 ? "var(--teal)" : "var(--pink)";
   statusEl.style.color = diff === 0 ? "var(--teal)" : "var(--pink)";
-  statusEl.textContent = diff === 0 ? "✓ 配分OK" : diff > 0 ? `残り ${diff}点 未配分` : `${-diff}点 超過`;
+  statusEl.textContent = diff === 0 ? "✓ 配分OK" : diff > 0 ? `残り ${diff.toLocaleString()}ジュエル 未配分` : `${(-diff).toLocaleString()}ジュエル 超過`;
 }
 
 function renderSetlistDisplay() {
@@ -1058,6 +1212,7 @@ function updateConfirmState() {
   const note = document.getElementById("confirm-note");
   const saveBtn = document.getElementById("save-btn");
   const rescoreBtn = document.getElementById("rescore-btn");
+  const msgEl = document.getElementById("confirm-message");
   const setlistReady = eventSetlist && eventSetlist.length > 0;
 
   if (isFinalized()) {
@@ -1067,12 +1222,14 @@ function updateConfirmState() {
     note.textContent = setlistReady
       ? ""
       : "確定済みです。ライブ後、管理者が正解セトリを登録すると自動的に採点され、ランキングに反映されます。";
+    if (!msgEl.textContent) msgEl.textContent = pickMessage(CONFIRM_MESSAGES, selectedIdol);
   } else {
     btn.classList.remove("hidden");
     btn.disabled = false;
     saveBtn.classList.remove("hidden");
     rescoreBtn.classList.add("hidden");
     note.textContent = "予想がまとまったらいつでも「確定する」を押せます(締切前でもOK)。締切を迎えると自動的に確定扱いになります。";
+    msgEl.textContent = "";
   }
 }
 
@@ -1149,7 +1306,7 @@ document.getElementById("confirm-btn").addEventListener("click", async () => {
   const filledCount = board.filter((s, i) => i === 12 || s).length;
 
   if (totalBet !== points) {
-    errorEl.textContent = `ベット合計が現在の持ち点(${points}点)と一致していません(現在 ${totalBet}点)。`;
+    errorEl.textContent = `ベット合計が現在のジュエル(${points.toLocaleString()}ジュエル)と一致していません(現在 ${totalBet.toLocaleString()}ジュエル)。`;
     errorEl.classList.remove("hidden");
     return;
   }
@@ -1169,6 +1326,7 @@ document.getElementById("confirm-btn").addEventListener("click", async () => {
   renderDeadlineBanner();
   setInputsDisabled(true);
   updateConfirmState();
+  document.getElementById("confirm-message").textContent = pickMessage(CONFIRM_MESSAGES, selectedIdol);
   tryAutoScore();
 });
 
@@ -1201,11 +1359,15 @@ function renderResult() {
       <tbody>${rows}</tbody>
     </table>
     <div class="flex-gap" style="font-size:13px; margin-bottom:14px;">
-      <div>ライン精算小計: <span class="mono-font" style="color:var(--text);">${result.subtotal}点</span></div>
+      <div>ライン精算小計: <span class="mono-font" style="color:var(--text);">${result.subtotal.toLocaleString()}ジュエル</span></div>
       <div>OPENING的中: <span style="color:${result.openingHit ? "var(--gold)" : "var(--muted)"};">${result.openingHit ? "○ (×2)" : "×"}</span></div>
       <div>ENCORE的中: <span style="color:${result.encoreHit ? "var(--gold)" : "var(--muted)"};">${result.encoreHit ? "○ (×2)" : "×"}</span></div>
     </div>
-    <div class="final-total"><span class="label">最終持ち点</span><span class="value">${result.finalTotal}</span></div>`;
+    <div class="final-total"><span class="label">最終ジュエル</span><span class="value">${result.finalTotal.toLocaleString()}</span></div>
+    <div style="margin-top:14px; text-align:right;">
+      <span class="mono-font" style="font-size:11px; color:var(--muted); margin-right:8px;">${TIER_LABEL[scoreTier(result.finalTotal)]}</span>
+      <span style="font-size:13px; color:var(--gold); font-style:italic;">${pickMessage(SCORE_TIER_MESSAGES[scoreTier(result.finalTotal)], selectedIdol)}</span>
+    </div>`;
 }
 
 // ---- SNS共有 ----
@@ -1233,7 +1395,7 @@ document.getElementById("share-generate-btn").addEventListener("click", () => {
   if (comment) text += `ひとこと: ${comment}\n`;
   if (result) {
     text += `\n─────\n🏆 確定結果\n`;
-    text += `持ち点: ${INITIAL_POINTS} → ${result.finalTotal}点\n`;
+    text += `ジュエル: ${INITIAL_POINTS.toLocaleString()} → ${result.finalTotal.toLocaleString()}\n`;
     text += `BINGO成立ライン: ${result.bingoCount}本\n`;
   }
   text += "\n#セトリ予想ビンゴ";
@@ -1273,14 +1435,14 @@ async function renderRankingTab() {
       <td class="rank-cell ${rankClass}">${rank}</td>
       <td>${escapeHtml(r.username)}</td>
       <td>${escapeHtml(r.selected_idol || "-")}</td>
-      <td class="mono-font">${r.total_points}</td>
+      <td class="mono-font">${Number(r.total_points).toLocaleString()}</td>
       <td class="mono-font">${r.bingo_count}</td>
       <td>${escapeHtml(r.comment || "")}</td>
     </tr>`;
   }).join("");
   wrap.innerHTML = `
     <table>
-      <thead><tr><th>順位</th><th>ユーザー名</th><th>担当アイドル</th><th>総合点</th><th>ビンゴ本数</th><th>ひとこと</th></tr></thead>
+      <thead><tr><th>順位</th><th>ユーザー名</th><th>担当アイドル</th><th>ジュエル</th><th>ビンゴ本数</th><th>ひとこと</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
 }
