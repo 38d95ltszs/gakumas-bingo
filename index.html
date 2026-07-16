@@ -1666,7 +1666,20 @@ function computeScore() {
 // 確定済み(自分でボタンを押した、または締切を迎えた)かつ正解セトリが登録され次第、自動で採点してランキングに反映する
 async function tryAutoScore() {
   if (!isFinalized()) { result = null; renderResult(); return; }
-  if (!eventSetlist || eventSetlist.length === 0) { result = null; renderResult(); return; }
+
+  const baseResultRow = {
+    event_id: selectedEvent.id, user_id: currentUser.id,
+    username: username || currentUser.label, selected_idol: selectedIdol, comment,
+  };
+
+  if (!eventSetlist || eventSetlist.length === 0) {
+    // 正解セトリ未登録でも、確定済みならランキング(結果発表前表示)用の行を必ず用意しておく
+    result = null;
+    renderResult();
+    const { error } = await supabase.from("results").upsert(baseResultRow);
+    if (error) console.error("results upsert (pre-score) failed:", error);
+    return;
+  }
 
   result = computeScore();
   points = result.finalTotal;
@@ -1675,16 +1688,18 @@ async function tryAutoScore() {
   renderResult();
   updatePointsAndBetTotal();
 
-  await supabase.from("game_saves").upsert({
+  const { error: saveError } = await supabase.from("game_saves").upsert({
     event_id: selectedEvent.id, user_id: currentUser.id,
     board, bets, points, selected_idol: selectedIdol, selected_idol_cv: selectedIdolCv, comment, username,
     confirmed: true, updated_at: new Date().toISOString(),
   });
-  await supabase.from("results").upsert({
-    event_id: selectedEvent.id, user_id: currentUser.id,
-    username: username || currentUser.label, selected_idol: selectedIdol, comment,
+  if (saveError) console.error("game_saves upsert failed:", saveError);
+
+  const { error: resultError } = await supabase.from("results").upsert({
+    ...baseResultRow,
     total_points: result.finalTotal, bingo_count: result.bingoCount,
   });
+  if (resultError) console.error("results upsert (scored) failed:", resultError);
 }
 
 // ================= 確定(予想のロック。採点は正解セトリ登録後に自動で行われる) =================
@@ -1711,12 +1726,6 @@ document.getElementById("confirm-btn").addEventListener("click", async () => {
     event_id: selectedEvent.id, user_id: currentUser.id,
     board, bets, points, selected_idol: selectedIdol, selected_idol_cv: selectedIdolCv, comment, username,
     confirmed: true, updated_at: new Date().toISOString(),
-  });
-  // 結果発表(正解セトリ登録)前でも、ランキング画面に「確定した人」として名前が出るよう、
-  // スコア抜きの行を先に登録しておく(スコアが出たらtryAutoScoreが同じ行を更新する)
-  await supabase.from("results").upsert({
-    event_id: selectedEvent.id, user_id: currentUser.id,
-    username: username || currentUser.label, selected_idol: selectedIdol, comment,
   });
 
   renderDeadlineBanner();
