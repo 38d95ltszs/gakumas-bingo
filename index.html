@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>学園セトリ予想ビンゴ</title>
+<title>セトリ予想ビンゴ</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
 
@@ -34,66 +34,40 @@ body {
 .display-font { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.04em; }
 .mono-font { font-family: 'JetBrains Mono', monospace; }
 
-.wrap {
-  max-width: 880px;
-  margin: 0 auto;
-  padding: 32px 20px 60px;
-}
-
+.wrap { max-width: 880px; margin: 0 auto; padding: 32px 20px 60px; }
 .hidden { display: none !important; }
 
 h1 { font-size: 40px; margin: 0; line-height: 1; }
 h2 { font-size: 22px; margin: 0 0 12px; }
 
-.eyebrow {
-  color: var(--gold);
-  font-size: 13px;
-  letter-spacing: 0.2em;
-  margin-bottom: 6px;
-}
-
+.eyebrow { color: var(--gold); font-size: 13px; letter-spacing: 0.2em; margin-bottom: 6px; }
 .lede { color: var(--muted); font-size: 14px; margin-top: 8px; max-width: 600px; }
 
-.card {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 18px;
-  margin-bottom: 24px;
-}
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px; margin-bottom: 24px; }
 
-input, select, button, textarea {
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
-}
+input, select, button, textarea { font-family: 'Inter', sans-serif; font-size: 13px; }
 
-input[type=text], input[type=password], input[type=number], select, textarea {
-  background: var(--card-alt);
-  color: var(--text);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 8px 10px;
+input[type=text], input[type=password], input[type=number], input[type=date], input[type=datetime-local],
+select, textarea {
+  background: var(--card-alt); color: var(--text); border: 1px solid var(--line);
+  border-radius: 6px; padding: 8px 10px;
 }
 
 select:focus, input:focus, button:focus-visible, textarea:focus {
-  outline: 2px solid var(--gold);
-  outline-offset: 2px;
+  outline: 2px solid var(--gold); outline-offset: 2px;
 }
 
-button {
-  cursor: pointer;
-  border: none;
-  border-radius: 8px;
-  font-weight: 700;
-  padding: 10px 18px;
-}
+button { cursor: pointer; border: none; border-radius: 8px; font-weight: 700; padding: 10px 18px; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .btn-primary { background: var(--teal); color: #16281f; }
 .btn-gold { background: var(--gold); color: #2b1608; }
 .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); font-weight: 400; }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
 
 .error-text { color: var(--pink); font-size: 13px; margin: 10px 0; }
 .ok-text { color: var(--teal); font-size: 12px; }
+.note-text { color: var(--muted); font-size: 12px; }
 
 /* ---------- 認証画面 ---------- */
 #auth-screen .card { max-width: 360px; margin: 60px auto 0; }
@@ -102,141 +76,82 @@ button {
 #auth-screen .auth-actions { display: flex; gap: 10px; margin-top: 18px; }
 #auth-toggle-mode { background: none; border: none; color: var(--teal); text-decoration: underline; padding: 0; font-weight: 400; }
 
-/* ---------- ヘッダー(ログイン後) ---------- */
-.topbar {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 20px; gap: 12px; flex-wrap: wrap;
-}
+/* ---------- ヘッダー ---------- */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
 .topbar .whoami { font-size: 13px; color: var(--muted); }
 .topbar .whoami b { color: var(--text); }
 
-/* ---------- ポイント/アイドル選択 ---------- */
+/* ---------- 大会選択 ---------- */
+.event-bar { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.event-bar label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+#event-select { min-width: 220px; }
+#create-event-form { margin-top: 12px; display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+#create-event-form label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+
+/* ---------- タブ ---------- */
+.tabs { display: flex; gap: 6px; margin-bottom: 20px; border-bottom: 2px solid var(--line); }
+.tab-btn {
+  background: none; border: none; border-radius: 8px 8px 0 0; padding: 10px 18px;
+  font-weight: 700; color: var(--muted); font-size: 14px;
+}
+.tab-btn.active { background: var(--card); color: var(--gold); }
+
+/* ---------- 締切バナー ---------- */
+.deadline-banner { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; flex-wrap: wrap; }
+.deadline-banner.open { background: rgba(63,166,114,0.15); color: #1f4d34; border: 1px solid var(--teal); }
+.deadline-banner.locked { background: rgba(255,92,138,0.15); color: #7a1436; border: 1px solid var(--pink); }
+
+/* ---------- 統計行 ---------- */
 .stat-row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-.stat-block { }
 .stat-label { font-size: 11px; color: var(--muted); }
 .stat-value { font-size: 22px; font-weight: 700; }
 .divider { width: 1px; height: 32px; background: var(--line); }
+#comment-input { width: 180px; }
 
 /* ---------- 凡例 ---------- */
 .legend { display: flex; gap: 18px; align-items: center; margin-bottom: 10px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
 .swatch { width: 12px; height: 12px; border: 1px solid var(--line); border-radius: 3px; display: inline-block; margin-right: 6px; vertical-align: middle; }
 
 /* ---------- ボード ---------- */
-#board {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-  margin-bottom: 28px;
-}
+#board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 28px; }
 .cell {
-  position: relative;
-  aspect-ratio: 1 / 1;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-  padding: 6px;
-  overflow: visible;
+  position: relative; aspect-ratio: 1 / 1; border: 1px solid var(--line); border-radius: 8px;
+  display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; padding: 6px;
 }
 .cell.front { background: var(--front); }
 .cell.back { background: var(--back); }
 .cell.center { background: var(--card-alt); display: flex; align-items: center; justify-content: center; }
-.cell.special {
-  border: 1.5px solid var(--gold);
-  box-shadow: 0 0 0 3px rgba(232,121,30,0.15);
-}
-.cell .tag {
-  position: absolute; top: 4px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--gold);
-  letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace; z-index: 2;
-}
-.cell .half-tag {
-  position: absolute; top: 3px; left: 5px; font-size: 8px; color: var(--muted);
-  font-family: 'JetBrains Mono', monospace; z-index: 2;
-}
+.cell.special { border: 1.5px solid var(--gold); box-shadow: 0 0 0 3px rgba(232,121,30,0.15); }
+.cell .tag { position: absolute; top: 4px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--gold); letter-spacing: 0.1em; font-family: 'JetBrains Mono', monospace; z-index: 2; }
+.cell .half-tag { position: absolute; top: 3px; left: 5px; font-size: 8px; color: var(--muted); font-family: 'JetBrains Mono', monospace; z-index: 2; }
 
-/* ---- 曲名インクリメンタルサーチ用コンボボックス ---- */
-.combo-wrap {
-  position: relative;
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-.song-search {
-  width: 100%;
-  font-size: 10px;
-  padding: 2px 4px;
-  height: 20px;
-  flex-shrink: 0;
-}
+.combo-wrap { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 3px; }
+.song-search { width: 100%; font-size: 10px; padding: 2px 4px; height: 20px; flex-shrink: 0; }
 .song-display {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  font-size: 10.5px;
-  line-height: 1.25;
-  color: var(--text);
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  padding: 2px 4px;
-  position: relative;
+  flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; text-align: center;
+  font-size: 10.5px; line-height: 1.25; color: var(--text); overflow-wrap: anywhere; word-break: break-word;
+  padding: 2px 4px; position: relative;
 }
 .song-display.empty { color: var(--muted); font-style: italic; }
-.song-display .clear-btn {
-  position: absolute; top: 0; right: 0;
-  background: none; border: none; color: var(--muted);
-  font-size: 12px; line-height: 1; padding: 2px 4px; font-weight: 400;
-}
+.song-display .clear-btn { position: absolute; top: 0; right: 0; background: none; border: none; color: var(--muted); font-size: 12px; line-height: 1; padding: 2px 4px; font-weight: 400; }
 .song-display .clear-btn:hover { color: var(--pink); }
 .song-suggestions {
-  position: absolute;
-  top: 22px;
-  left: 0; right: 0;
-  z-index: 50;
-  background: var(--card-alt);
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  max-height: 140px;
-  overflow-y: auto;
+  position: absolute; top: 22px; left: 0; right: 0; z-index: 50; background: var(--card-alt);
+  border: 1px solid var(--line); border-radius: 6px; max-height: 140px; overflow-y: auto;
   box-shadow: 0 8px 20px rgba(80,50,20,0.25);
 }
-.suggestion-item {
-  padding: 5px 8px;
-  font-size: 11px;
-  cursor: pointer;
-  white-space: normal;
-  line-height: 1.3;
-}
+.suggestion-item { padding: 5px 8px; font-size: 11px; cursor: pointer; white-space: normal; line-height: 1.3; }
 .suggestion-item:hover, .suggestion-item.active { background: var(--line); }
 .suggestion-empty { padding: 6px 8px; font-size: 11px; color: var(--muted); }
 .cell .free-label { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--muted); }
-.cell .hit-mark { position: absolute; bottom: 4px; right: 6px; font-size: 13px; }
-.cell .free-label { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--muted); }
 
 /* ---------- ベット ---------- */
-/* スマホ: 2列(横1-縦1、横2-縦2…とペアで並ぶ) */
-#bet-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
+#bet-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 @media (min-width: 700px) {
-  /* PC: 5列(横1〜横5が1行、縦1〜縦5が次の行にまとまる) */
-  #bet-grid {
-    grid-template-columns: repeat(5, 1fr);
-  }
+  #bet-grid { grid-template-columns: repeat(5, 1fr); }
   .bet-row { order: var(--desktop-order, 0); }
 }
-.bet-row {
-  background: var(--card); border: 1px solid var(--line); border-radius: 8px;
-  padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
-}
+.bet-row { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .bet-row span { font-size: 13px; color: var(--muted); }
 .bet-row input { width: 56px; text-align: right; }
 
@@ -245,23 +160,29 @@ button {
 .setlist-cols .col-title { color: var(--gold); margin-bottom: 6px; }
 .setlist-cols ol { margin: 0; padding-left: 18px; color: var(--muted); }
 
-/* ---------- 結果テーブル ---------- */
+/* ---------- テーブル共通 ---------- */
 table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 16px; }
 thead tr { color: var(--muted); text-align: left; }
 tbody tr { border-top: 1px solid var(--line); }
 td, th { padding: 6px; }
 
-.final-total {
-  padding: 16px 20px; background: var(--bg); border-radius: 8px;
-  display: flex; align-items: baseline; justify-content: space-between;
-}
-.final-total .label { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--muted); }
-.final-total .value { font-family: 'JetBrains Mono', monospace; font-size: 36px; font-weight: 700; color: var(--gold); }
+.final-total { padding: 16px 20px; background: var(--bg); border-radius: 8px; display: flex; align-items: baseline; justify-content: space-between; }
+.final-total .label { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: rgba(255,255,255,0.85); }
+.final-total .value { font-family: 'JetBrains Mono', monospace; font-size: 36px; font-weight: 700; color: #fff; }
 
 textarea#share-text-area { width: 100%; box-sizing: border-box; padding: 12px; resize: vertical; line-height: 1.6; }
-
 .flex-gap { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 
+/* ---------- ランキング ---------- */
+.rank-cell { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+.rank-1 { color: var(--gold); }
+.rank-2 { color: #8a7a63; }
+.rank-3 { color: #b5713a; }
+
+/* ---------- 管理タブ ---------- */
+#admin-preview { margin-top: 14px; max-height: 260px; overflow-y: auto; }
+#csv-file, #csv-text { width: 100%; }
+#csv-text { min-height: 140px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
 </style>
 </head>
 <body>
@@ -288,125 +209,204 @@ textarea#share-text-area { width: 100%; box-sizing: border-box; padding: 12px; r
     </div>
   </div>
 
-  <!-- ===================== ゲーム画面 ===================== -->
-  <div id="game-screen" class="wrap hidden">
+  <!-- ===================== アプリ本体 ===================== -->
+  <div id="app-screen" class="wrap hidden">
     <div class="topbar">
       <div>
         <div class="eyebrow">SETLIST BINGO</div>
-        <h1 class="display-font">学園セトリ予想ビンゴ</h1>
+        <h1 class="display-font">セトリ予想ビンゴ</h1>
       </div>
       <div class="whoami">
         <span id="whoami-id">-</span> でログイン中
-        <button id="logout-btn" class="btn-ghost" style="margin-left:10px; padding:6px 12px; font-size:12px;">ログアウト</button>
-      </div>
-    </div>
-    <p class="lede">5×5マスにセトリ予想を入力し、12ライン(縦・横・斜め)に持ち点をベット。公演終了後、正解セトリで一括判定する。内容は自動でSupabaseに保存され、次回ログイン時に続きから再開できる。</p>
-
-    <!-- 持ち点・担当アイドル -->
-    <div class="card stat-row">
-      <div class="stat-block">
-        <div class="stat-label">現在の持ち点</div>
-        <div id="points-value" class="stat-value mono-font">150</div>
-      </div>
-      <div class="divider"></div>
-      <div class="stat-block">
-        <div class="stat-label">ベット合計</div>
-        <div id="bet-total-value" class="stat-value mono-font">120</div>
-      </div>
-      <div id="bet-status" class="ok-text"></div>
-      <div class="divider" style="margin-left:auto;"></div>
-      <div class="stat-block">
-        <div class="stat-label" style="margin-bottom:4px;">担当アイドル</div>
-        <select id="idol-select"></select>
+        <button id="logout-btn" class="btn-ghost btn-sm" style="margin-left:10px;">ログアウト</button>
       </div>
     </div>
 
-    <!-- 凡例 -->
-    <div class="legend">
-      <div><span class="swatch" style="background:var(--front);"></span>前半予想(1〜12曲目)</div>
-      <div><span class="swatch" style="background:var(--back);"></span>後半予想(13〜24曲目)</div>
-      <div><span class="swatch" style="background:var(--card-alt);"></span>中央FREE(前半/後半の区切り)</div>
-    </div>
-
-    <!-- ボード -->
-    <div id="board"></div>
-
-    <!-- SNS共有 -->
+    <!-- 大会選択 -->
     <div class="card">
-      <div class="flex-gap" style="justify-content:space-between;">
-        <h2>SNS共有用テキスト</h2>
-        <button id="share-generate-btn" class="btn-primary">予想一覧を生成</button>
+      <div class="event-bar">
+        <div>
+          <label for="event-select">参加するビンゴ大会</label>
+          <select id="event-select"><option value="">大会を選択…</option></select>
+        </div>
+        <button id="show-create-event-btn" class="btn-gold btn-sm hidden">＋ 新しい大会を作る</button>
       </div>
-      <p class="lede" style="margin-top:8px;">25マスの予想(＋判定済みならスコアも)をテキスト化する。判定前でも生成できる。</p>
-      <div id="share-error" class="error-text hidden"></div>
-      <div id="share-box" class="hidden" style="margin-top:14px;">
-        <textarea id="share-text-area" rows="14" readonly></textarea>
-        <div class="flex-gap" style="margin-top:8px;">
-          <button id="share-copy-btn" class="btn-gold">コピー</button>
-          <span id="share-copied" class="ok-text hidden">✓ コピーしました</span>
+      <div id="create-event-form" class="hidden">
+        <div class="flex-gap" style="align-items:flex-end;">
+          <div>
+            <label for="new-event-name">大会名</label>
+            <input id="new-event-name" type="text" placeholder="例: 福井公演Day1">
+          </div>
+          <div>
+            <label for="new-event-date">開催日</label>
+            <input id="new-event-date" type="date">
+          </div>
+          <div>
+            <label for="new-event-deadline">予想締切</label>
+            <input id="new-event-deadline" type="datetime-local">
+          </div>
+        </div>
+
+        <div style="margin-top:16px;">
+          <label style="display:block; font-size:12px; color:var(--muted); margin-bottom:4px;">候補曲リスト(CSV、1行1曲。予想入力の選択肢になる)</label>
+          <input type="file" id="new-event-songs-file" accept=".csv,text/csv">
+          <textarea id="new-event-songs-text" style="width:100%; min-height:100px; margin-top:6px; font-family:'JetBrains Mono',monospace; font-size:12px;" placeholder="曲名&#10;モーニング・プリズム&#10;リハーサル・トワイライト&#10;..."></textarea>
+        </div>
+
+        <div style="margin-top:16px;">
+          <label style="display:block; font-size:12px; color:var(--muted); margin-bottom:4px;">担当アイドル一覧(CSV、1行1人。「担当アイドル」の選択肢になる)</label>
+          <input type="file" id="new-event-idols-file" accept=".csv,text/csv">
+          <textarea id="new-event-idols-text" style="width:100%; min-height:80px; margin-top:6px; font-family:'JetBrains Mono',monospace; font-size:12px;" placeholder="アイドル名&#10;陽向ひまり&#10;小鳥遊そら&#10;..."></textarea>
+        </div>
+
+        <div class="flex-gap" style="margin-top:14px;">
+          <button id="submit-create-event-btn" class="btn-primary btn-sm">作成する</button>
+          <button id="cancel-create-event-btn" class="btn-ghost btn-sm">キャンセル</button>
+        </div>
+      </div>
+      <div id="create-event-error" class="error-text hidden"></div>
+    </div>
+
+    <div id="event-content" class="hidden">
+      <!-- タブ -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="predict">予想</button>
+        <button class="tab-btn" data-tab="ranking">ランキング</button>
+        <button class="tab-btn hidden" data-tab="admin" id="admin-tab-btn">管理</button>
+      </div>
+
+      <!-- ===== 予想タブ ===== -->
+      <div id="tab-predict">
+        <div id="deadline-banner" class="deadline-banner"></div>
+
+        <div class="card stat-row">
+          <div>
+            <div class="stat-label">現在の持ち点</div>
+            <div id="points-value" class="stat-value mono-font">150</div>
+          </div>
+          <div class="divider"></div>
+          <div>
+            <div class="stat-label">ベット合計</div>
+            <div id="bet-total-value" class="stat-value mono-font">120</div>
+          </div>
+          <div id="bet-status" class="ok-text"></div>
+          <div class="divider"></div>
+          <div>
+            <div class="stat-label" style="margin-bottom:4px;">担当アイドル</div>
+            <select id="idol-select"></select>
+          </div>
+          <div class="divider"></div>
+          <div>
+            <div class="stat-label" style="margin-bottom:4px;">ひとこと</div>
+            <input id="comment-input" type="text" maxlength="60" placeholder="意気込みなど(60字まで)">
+          </div>
+        </div>
+
+        <div class="legend">
+          <div><span class="swatch" style="background:var(--front);"></span>前半予想(1〜12曲目)</div>
+          <div><span class="swatch" style="background:var(--back);"></span>後半予想(13〜24曲目)</div>
+          <div><span class="swatch" style="background:var(--card-alt);"></span>中央FREE(前半/後半の区切り)</div>
+        </div>
+
+        <div id="board"></div>
+
+        <div class="card">
+          <div class="flex-gap" style="justify-content:space-between;">
+            <h2>SNS共有用テキスト</h2>
+            <button id="share-generate-btn" class="btn-primary">予想一覧を生成</button>
+          </div>
+          <p class="lede" style="margin-top:8px;">25マスの予想(＋確定済みならスコアも)をテキスト化する。</p>
+          <div id="share-error" class="error-text hidden"></div>
+          <div id="share-box" class="hidden" style="margin-top:14px;">
+            <textarea id="share-text-area" rows="14" readonly></textarea>
+            <div class="flex-gap" style="margin-top:8px;">
+              <button id="share-copy-btn" class="btn-gold">コピー</button>
+              <span id="share-copied" class="ok-text hidden">✓ コピーしました</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>ライン別ベット</h2>
+          <div id="bet-grid"></div>
+        </div>
+
+        <div class="card">
+          <h2>正解セトリ</h2>
+          <div id="setlist-display"><p class="note-text">まだ登録されていません(大会終了後、管理者が登録します)。</p></div>
+        </div>
+
+        <div id="confirm-error" class="error-text hidden"></div>
+        <div class="flex-gap" style="margin-bottom:14px;">
+          <button id="confirm-btn" class="btn-primary">確定する</button>
+          <button id="save-btn" class="btn-gold">保存する</button>
+          <button id="rescore-btn" class="btn-ghost btn-sm">再採点する</button>
+        </div>
+        <div id="confirm-note" class="note-text" style="margin-bottom:20px;"></div>
+        <div id="save-status" class="ok-text hidden" style="margin-bottom:20px;"></div>
+
+        <div id="result-box" class="card hidden" style="border-color: var(--gold);"></div>
+      </div>
+
+      <!-- ===== ランキングタブ ===== -->
+      <div id="tab-ranking" class="hidden">
+        <div class="card">
+          <div class="flex-gap" style="justify-content:space-between;">
+            <h2>ランキング</h2>
+            <button id="ranking-refresh-btn" class="btn-ghost btn-sm">更新</button>
+          </div>
+          <div id="ranking-table-wrap"><p class="note-text">まだ「確定」した参加者がいません。</p></div>
+        </div>
+      </div>
+
+      <!-- ===== 管理タブ ===== -->
+      <div id="tab-admin" class="hidden">
+        <div class="card">
+          <h2>大会の管理</h2>
+          <p class="lede">この大会の正解セトリ(曲目・担当アイドル)をCSVで登録する。1行目が1曲目、最終行がラスト曲(ENCORE)として判定されるので、実際に演奏された順に上から並べること(曲数は24曲固定でなくてよい)。</p>
+          <p class="note-text">CSV形式: 1行1曲、「曲名,担当アイドル」の2列。担当アイドルが複数いる場合は「/」区切り(例: きらめきステップ,陽向ひまり/小鳥遊そら)。ヘッダー行はあってもなくてもよい。カンマを含む曲名・アイドル名には現状対応していない。</p>
+
+          <label style="display:block; font-size:12px; color:var(--muted); margin:14px 0 4px;">CSVファイルを選択</label>
+          <input type="file" id="csv-file" accept=".csv,text/csv">
+
+          <label style="display:block; font-size:12px; color:var(--muted); margin:14px 0 4px;">またはここに貼り付け</label>
+          <textarea id="csv-text" placeholder="曲名,担当アイドル&#10;モーニング・プリズム,陽向ひまり&#10;..."></textarea>
+
+          <div class="flex-gap" style="margin-top:10px;">
+            <button id="csv-parse-btn" class="btn-primary btn-sm">内容を確認する</button>
+            <button id="csv-submit-btn" class="btn-gold btn-sm hidden">この内容で登録する</button>
+          </div>
+          <div id="csv-error" class="error-text hidden"></div>
+          <div id="csv-status" class="ok-text hidden"></div>
+          <div id="admin-preview"></div>
+        </div>
+
+        <div class="card">
+          <h2>締切の変更</h2>
+          <div class="flex-gap">
+            <input id="edit-deadline-input" type="datetime-local">
+            <button id="edit-deadline-btn" class="btn-primary btn-sm">締切を更新</button>
+          </div>
+          <div id="edit-deadline-status" class="ok-text hidden" style="margin-top:8px;"></div>
         </div>
       </div>
     </div>
-
-    <!-- ベット -->
-    <div class="card">
-      <h2>ライン別ベット</h2>
-      <div id="bet-grid"></div>
-    </div>
-
-    <!-- 正解セトリ(テスト用) -->
-    <div class="card">
-      <div class="flex-gap" style="justify-content:space-between;">
-        <h2>正解セトリ(テスト用ダミー)</h2>
-        <button id="gen-setlist-btn" class="btn-gold">ダミー正解セトリを生成</button>
-      </div>
-      <div id="setlist-display"></div>
-    </div>
-
-    <!-- アクション -->
-    <div id="judge-error" class="error-text hidden"></div>
-    <div class="flex-gap" style="margin-bottom:28px;">
-      <button id="judge-btn" class="btn-primary">判定する</button>
-      <button id="save-btn" class="btn-gold">今すぐ保存</button>
-      <button id="new-round-btn" class="btn-ghost">新しいラウンドを始める(持ち点は維持)</button>
-    </div>
-    <div id="save-status" class="ok-text hidden" style="margin-bottom:20px;"></div>
-
-    <!-- 結果 -->
-    <div id="result-box" class="card hidden" style="border-color: var(--gold);"></div>
   </div>
 
   <script type="module">
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // ▼▼▼ ここをSupabaseプロジェクトの値に書き換えてください ▼▼▼
-// Supabaseダッシュボード > Project Settings > API で確認できます。
 const SUPABASE_URL = "https://pijfucuqofvsvoqjcmdu.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBpamZ1Y3Vxb2Z2c3ZvcWpjbWR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxNTU3NzEsImV4cCI6MjA5OTczMTc3MX0._lfRWXiXzQ1pWS3rH7HJPdwEEcECmkEph_HjfkdO0O4";
-// IDでログインするための疑似メールドメイン(実在しなくてOK)
 const FAKE_EMAIL_DOMAIN = "gakumas-bingo.local";
+// 大会作成ボタンを表示する管理者のログインID(現状は1人だけに限定。将来ここを外せば誰でも作成可にできる)
+const SUPER_ADMIN_LOGIN_ID = "gakuen";
 // ▲▲▲ ここまで ▲▲▲
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ---- ダミー楽曲プール(本番では実際のセトリ候補曲に差し替え予定) ----
-const SONG_POOL = [
-  "モーニング・プリズム", "リハーサル・トワイライト", "backstage diary",
-  "誓いのファンファーレ", "灯火のオーバーチュア", "きらめきステップ",
-  "初陣ノート", "夢のリレー", "拍手のカーテンコール", "青のリフレイン",
-  "ネオンの約束", "初舞台", "追いかけるスポットライト", "花道のワルツ",
-  "レッスンルームの窓", "喝采のあと", "夜明けのセットリスト",
-  "手をつなぐ瞬間", "涙のアンコール", "全力アピール", "舞台裏の約束",
-  "拝啓、あの日の私へ", "みんなのプロデュース", "終幕のリボン",
-  "ネクストステージ", "つぼみの合図", "拍動リズム", "銀テープの軌跡",
-  "君と見る景色", "最後の一音まで",
-];
-
-// ---- ダミー担当アイドルプール(本番ではCSVの歌唱メンバー列から生成) ----
-const IDOL_POOL = [
-  "陽向ひまり", "小鳥遊そら", "水無月れん", "花村みなも",
-  "十六夜つむぎ", "白金ののか", "星野かなで", "美濃部あおい",
-];
+// 候補曲リスト・担当アイドル一覧は大会ごとにCSVで登録される(下記 eventSongs / eventIdols)
 
 const LINES = [
   { id: "row1", label: "横1列目", idx: [0, 1, 2, 3, 4] },
@@ -422,20 +422,34 @@ const LINES = [
   { id: "diag1", label: "斜め ↘", idx: [0, 6, 12, 18, 24] },
   { id: "diag2", label: "斜め ↙", idx: [4, 8, 12, 16, 20] },
 ];
+const DESKTOP_ORDER = {
+  row1: 1, row2: 2, row3: 3, row4: 4, row5: 5,
+  col1: 6, col2: 7, col3: 8, col4: 9, col5: 10,
+  diag1: 11, diag2: 12,
+};
 
 const INITIAL_POINTS = 150;
 const DEFAULT_BET = 10;
 
 // ---------------- 状態 ----------------
+let currentUser = null;       // {id, label}
+let events = [];              // 大会一覧
+let selectedEvent = null;     // 選択中の大会オブジェクト
+let eventSongs = [];           // 候補曲リスト(大会作成時に登録)
+let eventIdols = [];           // 担当アイドル候補一覧(大会作成時に登録)
+let eventSetlist = null;      // [{position, song, members}] or null
+let isAdminOfEvent = false;
+let isLocked = false;         // 締切時刻を過ぎたか
+let confirmed = false;        // ユーザーが「確定する」を押したか(締切前でも可)
+
 let board = Array(25).fill(null);
 let bets = {};
 LINES.forEach((l) => (bets[l.id] = DEFAULT_BET));
 let points = INITIAL_POINTS;
 let selectedIdol = IDOL_POOL[0];
-let correctSetlist = null; // [{song, members:[...]}]
+let comment = "";
 let result = null;
-let currentUser = null;
-let authMode = "login"; // or "signup"
+let parsedCsvRows = null; // 管理タブでパース済みのCSV
 
 // ---------------- ユーティリティ ----------------
 function shuffle(arr) {
@@ -451,23 +465,37 @@ function groupOf(i) {
   if (i < 12) return "front";
   return "back";
 }
-function fakeEmail(id) {
-  return `${id.trim().toLowerCase()}@${FAKE_EMAIL_DOMAIN}`;
-}
+function fakeEmail(id) { return `${id.trim().toLowerCase()}@${FAKE_EMAIL_DOMAIN}`; }
 function songMembersMap() {
   const map = {};
-  if (correctSetlist) correctSetlist.forEach((e) => (map[e.song] = e.members));
+  if (eventSetlist) eventSetlist.forEach((e) => (map[e.song] = e.members));
   return map;
+}
+function fmtDateTime(d) {
+  const dt = new Date(d);
+  return `${dt.getMonth() + 1}/${dt.getDate()} ${String(dt.getHours()).padStart(2, "0")}:${String(dt.getMinutes()).padStart(2, "0")}`;
+}
+function toDatetimeLocalValue(d) {
+  const dt = new Date(d);
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+}
+function parseListCsv(raw) {
+  let lines = raw.split(/\r?\n/).map((l) => l.trim()).filter((l) => l.length > 0);
+  if (lines.length && /^(曲名|song|アイドル|idol)/i.test(lines[0])) lines = lines.slice(1);
+  // 念のため1列目だけ拾う(誤ってCSVとして複数列貼られた場合の保険)
+  return lines.map((l) => l.split(",")[0].trim()).filter(Boolean);
 }
 
 // ================= 認証 =================
 const authScreen = document.getElementById("auth-screen");
-const gameScreen = document.getElementById("game-screen");
+const appScreen = document.getElementById("app-screen");
 const authIdInput = document.getElementById("auth-id");
 const authPasswordInput = document.getElementById("auth-password");
 const authError = document.getElementById("auth-error");
 const authSubmitBtn = document.getElementById("auth-submit");
 const authToggleBtn = document.getElementById("auth-toggle-mode");
+let authMode = "login";
 
 authToggleBtn.addEventListener("click", () => {
   authMode = authMode === "login" ? "signup" : "login";
@@ -480,14 +508,8 @@ authSubmitBtn.addEventListener("click", async () => {
   authError.classList.add("hidden");
   const id = authIdInput.value.trim();
   const password = authPasswordInput.value;
-  if (!id || !password) {
-    showAuthError("IDとパスワードを入力してください。");
-    return;
-  }
-  if (password.length < 6) {
-    showAuthError("パスワードは6文字以上にしてください。");
-    return;
-  }
+  if (!id || !password) return showAuthError("IDとパスワードを入力してください。");
+  if (password.length < 6) return showAuthError("パスワードは6文字以上にしてください。");
 
   const email = fakeEmail(id);
   authSubmitBtn.disabled = true;
@@ -496,7 +518,6 @@ authSubmitBtn.addEventListener("click", async () => {
       const { data, error } = await supabase.auth.signUp({ email, password });
       if (error) throw error;
       if (!data.session) {
-        // Confirm emailがONのままだとここに来る
         showAuthError("登録はできましたが、自動ログインできませんでした。Supabase側で「Confirm email」がOFFになっているか確認してください。");
         authSubmitBtn.disabled = false;
         return;
@@ -514,11 +535,7 @@ authSubmitBtn.addEventListener("click", async () => {
   }
 });
 
-function showAuthError(msg) {
-  authError.textContent = msg;
-  authError.classList.remove("hidden");
-}
-
+function showAuthError(msg) { authError.textContent = msg; authError.classList.remove("hidden"); }
 function translateAuthError(msg) {
   if (/Invalid login credentials/i.test(msg)) return "IDまたはパスワードが違います。";
   if (/already registered/i.test(msg)) return "このIDはすでに登録されています。ログインしてください。";
@@ -528,7 +545,7 @@ function translateAuthError(msg) {
 document.getElementById("logout-btn").addEventListener("click", async () => {
   await supabase.auth.signOut();
   currentUser = null;
-  gameScreen.classList.add("hidden");
+  appScreen.classList.add("hidden");
   authScreen.classList.remove("hidden");
   authIdInput.value = "";
   authPasswordInput.value = "";
@@ -537,13 +554,12 @@ document.getElementById("logout-btn").addEventListener("click", async () => {
 async function onLoggedIn(user, id) {
   currentUser = { id: user.id, label: id };
   document.getElementById("whoami-id").textContent = id;
-  await loadSave();
+  document.getElementById("show-create-event-btn").classList.toggle("hidden", id !== SUPER_ADMIN_LOGIN_ID);
   authScreen.classList.add("hidden");
-  gameScreen.classList.remove("hidden");
-  renderAll();
+  appScreen.classList.remove("hidden");
+  await loadEvents();
 }
 
-// 既存セッションがあれば自動ログイン
 (async () => {
   const { data } = await supabase.auth.getSession();
   if (data.session) {
@@ -553,79 +569,268 @@ async function onLoggedIn(user, id) {
   }
 })();
 
-// ================= Supabase 保存/読込 =================
-async function loadSave() {
+// ================= 大会(イベント) =================
+async function loadEvents() {
+  const { data, error } = await supabase.from("events").select("*").order("deadline", { ascending: true });
+  if (error) { console.error(error); return; }
+  events = data || [];
+  const sel = document.getElementById("event-select");
+  sel.innerHTML = '<option value="">大会を選択…</option>';
+  events.forEach((ev) => {
+    const opt = document.createElement("option");
+    opt.value = ev.id;
+    const d = ev.event_date ? new Date(ev.event_date) : null;
+    const dateLabel = d ? `${d.getMonth() + 1}/${d.getDate()}、` : "";
+    opt.textContent = `${dateLabel}${ev.name}`;
+    sel.appendChild(opt);
+  });
+}
+
+document.getElementById("event-select").addEventListener("change", async (e) => {
+  const id = e.target.value;
+  if (!id) {
+    document.getElementById("event-content").classList.add("hidden");
+    selectedEvent = null;
+    return;
+  }
+  selectedEvent = events.find((ev) => ev.id === id);
+  document.getElementById("event-content").classList.remove("hidden");
+  isAdminOfEvent = currentUser.id === selectedEvent.created_by;
+  document.getElementById("admin-tab-btn").classList.toggle("hidden", !isAdminOfEvent);
+  isLocked = new Date() >= new Date(selectedEvent.deadline);
+
+  await Promise.all([loadEventSetlist(), loadEventSongs(), loadEventIdols(), loadGameSave()]);
+  switchTab("predict");
+  renderPredictTab();
+});
+
+async function loadEventSongs() {
+  const { data, error } = await supabase.from("event_songs").select("song").eq("event_id", selectedEvent.id).order("song");
+  if (error) { console.error(error); eventSongs = []; return; }
+  eventSongs = (data || []).map((r) => r.song);
+}
+async function loadEventIdols() {
+  const { data, error } = await supabase.from("event_idols").select("idol").eq("event_id", selectedEvent.id).order("idol");
+  if (error) { console.error(error); eventIdols = []; return; }
+  eventIdols = (data || []).map((r) => r.idol);
+}
+
+document.getElementById("show-create-event-btn").addEventListener("click", () => {
+  document.getElementById("create-event-form").classList.toggle("hidden");
+});
+document.getElementById("cancel-create-event-btn").addEventListener("click", () => {
+  document.getElementById("create-event-form").classList.add("hidden");
+});
+document.getElementById("new-event-songs-file").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => { document.getElementById("new-event-songs-text").value = reader.result; };
+  reader.readAsText(file, "utf-8");
+});
+document.getElementById("new-event-idols-file").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => { document.getElementById("new-event-idols-text").value = reader.result; };
+  reader.readAsText(file, "utf-8");
+});
+
+document.getElementById("submit-create-event-btn").addEventListener("click", async () => {
+  const errEl = document.getElementById("create-event-error");
+  errEl.classList.add("hidden");
+  const name = document.getElementById("new-event-name").value.trim();
+  const eventDate = document.getElementById("new-event-date").value;
+  const deadline = document.getElementById("new-event-deadline").value;
+  const songs = parseListCsv(document.getElementById("new-event-songs-text").value);
+  const idols = parseListCsv(document.getElementById("new-event-idols-text").value);
+
+  if (!name || !deadline) {
+    errEl.textContent = "大会名と締切は必須です。";
+    errEl.classList.remove("hidden");
+    return;
+  }
+  if (songs.length === 0) {
+    errEl.textContent = "候補曲リストを1曲以上入力してください。";
+    errEl.classList.remove("hidden");
+    return;
+  }
+  if (idols.length === 0) {
+    errEl.textContent = "担当アイドル一覧を1人以上入力してください。";
+    errEl.classList.remove("hidden");
+    return;
+  }
+
+  const submitBtn = document.getElementById("submit-create-event-btn");
+  submitBtn.disabled = true;
+  try {
+    const { data: eventRow, error: evError } = await supabase
+      .from("events")
+      .insert({ name, event_date: eventDate || null, deadline: new Date(deadline).toISOString(), created_by: currentUser.id })
+      .select()
+      .single();
+    if (evError) throw evError;
+
+    const { error: songsError } = await supabase
+      .from("event_songs")
+      .insert(songs.map((song) => ({ event_id: eventRow.id, song })));
+    if (songsError) throw songsError;
+
+    const { error: idolsError } = await supabase
+      .from("event_idols")
+      .insert(idols.map((idol) => ({ event_id: eventRow.id, idol })));
+    if (idolsError) throw idolsError;
+
+    document.getElementById("create-event-form").classList.add("hidden");
+    document.getElementById("new-event-name").value = "";
+    document.getElementById("new-event-date").value = "";
+    document.getElementById("new-event-deadline").value = "";
+    document.getElementById("new-event-songs-text").value = "";
+    document.getElementById("new-event-idols-text").value = "";
+    await loadEvents();
+  } catch (e) {
+    errEl.textContent = "作成に失敗しました: " + e.message;
+    errEl.classList.remove("hidden");
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+
+// ================= 正解セトリ読み込み =================
+async function loadEventSetlist() {
+  const { data, error } = await supabase
+    .from("event_setlists")
+    .select("*")
+    .eq("event_id", selectedEvent.id)
+    .order("position", { ascending: true });
+  if (error) { console.error(error); eventSetlist = null; return; }
+  eventSetlist = (data && data.length > 0) ? data : null;
+}
+
+// ================= 保存/読込(予想データ) =================
+async function loadGameSave() {
   const { data, error } = await supabase
     .from("game_saves")
     .select("*")
+    .eq("event_id", selectedEvent.id)
     .eq("user_id", currentUser.id)
     .maybeSingle();
+  if (error) console.error(error);
 
-  if (error) {
-    console.error("load error", error);
-    return;
-  }
   if (data) {
     board = data.board || Array(25).fill(null);
     bets = data.bets || Object.fromEntries(LINES.map((l) => [l.id, DEFAULT_BET]));
     points = typeof data.points === "number" ? data.points : INITIAL_POINTS;
-    selectedIdol = data.selected_idol || IDOL_POOL[0];
+    selectedIdol = data.selected_idol || (eventIdols[0] || "");
+    comment = data.comment || "";
+    confirmed = !!data.confirmed;
   } else {
     board = Array(25).fill(null);
     bets = Object.fromEntries(LINES.map((l) => [l.id, DEFAULT_BET]));
     points = INITIAL_POINTS;
-    selectedIdol = IDOL_POOL[0];
+    selectedIdol = eventIdols[0] || "";
+    comment = "";
+    confirmed = false;
   }
   result = null;
-  correctSetlist = null;
 }
 
 async function saveGame() {
-  const saveStatus = document.getElementById("save-status");
+  const status = document.getElementById("save-status");
   const { error } = await supabase.from("game_saves").upsert({
+    event_id: selectedEvent.id,
     user_id: currentUser.id,
-    board,
-    bets,
-    points,
+    board, bets, points,
     selected_idol: selectedIdol,
+    comment,
     updated_at: new Date().toISOString(),
   });
   if (error) {
-    console.error("save error", error);
-    saveStatus.textContent = "保存に失敗しました: " + error.message;
-    saveStatus.classList.remove("hidden");
+    status.textContent = "保存に失敗しました: " + error.message;
+    status.classList.remove("hidden");
     return;
   }
-  saveStatus.textContent = "✓ 保存しました";
-  saveStatus.classList.remove("hidden");
-  setTimeout(() => saveStatus.classList.add("hidden"), 2000);
+  status.textContent = "✓ 保存しました";
+  status.classList.remove("hidden");
+  setTimeout(() => status.classList.add("hidden"), 2000);
 }
 
-// ================= 描画 =================
-function renderAll() {
+// ================= タブ切り替え =================
+function switchTab(tab) {
+  document.querySelectorAll(".tab-btn").forEach((b) => b.classList.toggle("active", b.dataset.tab === tab));
+  document.getElementById("tab-predict").classList.toggle("hidden", tab !== "predict");
+  document.getElementById("tab-ranking").classList.toggle("hidden", tab !== "ranking");
+  document.getElementById("tab-admin").classList.toggle("hidden", tab !== "admin");
+  if (tab === "ranking") renderRankingTab();
+  if (tab === "admin") renderAdminTab();
+  if (tab === "predict") {
+    isLocked = new Date() >= new Date(selectedEvent.deadline);
+    renderDeadlineBanner();
+    setInputsDisabled(isFinalized());
+    updateConfirmState();
+    tryAutoScore();
+  }
+}
+document.querySelectorAll(".tab-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    if (btn.dataset.tab === "admin" && !isAdminOfEvent) return;
+    switchTab(btn.dataset.tab);
+  });
+});
+
+// ================= 予想タブ描画 =================
+function isFinalized() { return confirmed || isLocked; }
+
+function renderPredictTab() {
+  renderDeadlineBanner();
   renderIdolSelect();
+  renderCommentInput();
   renderBoard();
   renderBetGrid();
   updatePointsAndBetTotal();
   renderSetlistDisplay();
-  renderResult();
+  setInputsDisabled(isFinalized());
+  updateConfirmState();
+  tryAutoScore();
+}
+
+function renderDeadlineBanner() {
+  const el = document.getElementById("deadline-banner");
+  if (isLocked) {
+    el.className = "deadline-banner locked";
+    el.textContent = `🔒 締切済み(締切: ${fmtDateTime(selectedEvent.deadline)}) — 予想内容は閲覧のみです`;
+  } else if (confirmed) {
+    el.className = "deadline-banner locked";
+    el.textContent = `✅ 確定済みです(締切: ${fmtDateTime(selectedEvent.deadline)}) — 内容の変更はできません`;
+  } else {
+    el.className = "deadline-banner open";
+    el.textContent = `📝 締切: ${fmtDateTime(selectedEvent.deadline)} まで編集できます`;
+  }
+}
+
+function setInputsDisabled(disabled) {
+  document.querySelectorAll("#board select, #board input, #board button").forEach((el) => (el.disabled = disabled));
+  document.querySelectorAll("#bet-grid input").forEach((el) => (el.disabled = disabled));
+  document.getElementById("idol-select").disabled = disabled;
+  document.getElementById("comment-input").disabled = disabled;
 }
 
 function renderIdolSelect() {
   const sel = document.getElementById("idol-select");
   sel.innerHTML = "";
-  IDOL_POOL.forEach((name) => {
+  eventIdols.forEach((name) => {
     const opt = document.createElement("option");
-    opt.value = name;
-    opt.textContent = name;
+    opt.value = name; opt.textContent = name;
     if (name === selectedIdol) opt.selected = true;
     sel.appendChild(opt);
   });
-  sel.addEventListener("change", (e) => {
-    selectedIdol = e.target.value;
-    result = null;
-    renderResult();
-  });
+  sel.onchange = (e) => { selectedIdol = e.target.value; };
+}
+
+function renderCommentInput() {
+  const input = document.getElementById("comment-input");
+  input.value = comment;
+  input.oninput = (e) => { comment = e.target.value; };
 }
 
 function createSongCombobox(i, special) {
@@ -634,25 +839,18 @@ function createSongCombobox(i, special) {
   wrap.style.marginTop = special ? "12px" : "10px";
 
   const input = document.createElement("input");
-  input.type = "text";
-  input.className = "song-search";
-  input.placeholder = "検索…";
-  input.autocomplete = "off";
+  input.type = "text"; input.className = "song-search"; input.placeholder = "検索…"; input.autocomplete = "off";
 
   const display = document.createElement("div");
   display.className = "song-display" + (board[i] ? "" : " empty");
   display.textContent = board[i] || "未選択";
   if (board[i]) {
     const clearBtn = document.createElement("button");
-    clearBtn.className = "clear-btn";
-    clearBtn.textContent = "×";
-    clearBtn.title = "選択をクリア";
+    clearBtn.className = "clear-btn"; clearBtn.textContent = "×"; clearBtn.title = "選択をクリア";
     clearBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      board[i] = null;
-      result = null;
-      renderBoard();
-      renderResult();
+      board[i] = null; result = null;
+      renderBoard(); renderResult();
     });
     display.appendChild(clearBtn);
   }
@@ -663,61 +861,39 @@ function createSongCombobox(i, special) {
   function renderSuggestions(query) {
     suggestions.innerHTML = "";
     const q = query.trim();
-    const matches = q
-      ? SONG_POOL.filter((s) => s.toLowerCase().includes(q.toLowerCase()))
-      : SONG_POOL;
-
+    const matches = q ? eventSongs.filter((s) => s.toLowerCase().includes(q.toLowerCase())) : eventSongs;
     if (matches.length === 0) {
       const empty = document.createElement("div");
-      empty.className = "suggestion-empty";
-      empty.textContent = "該当する曲がありません";
+      empty.className = "suggestion-empty"; empty.textContent = "該当する曲がありません";
       suggestions.appendChild(empty);
       return;
     }
     matches.forEach((song) => {
       const item = document.createElement("div");
-      item.className = "suggestion-item";
-      item.textContent = song;
+      item.className = "suggestion-item"; item.textContent = song;
       item.addEventListener("mousedown", (e) => {
-        // blurより先に発火させ、選択を確定させる
         e.preventDefault();
-        board[i] = song;
-        result = null;
-        renderBoard();
-        renderResult();
+        board[i] = song; result = null;
+        renderBoard(); renderResult();
       });
       suggestions.appendChild(item);
     });
   }
 
-  input.addEventListener("focus", () => {
-    renderSuggestions(input.value);
-    suggestions.classList.remove("hidden");
-  });
-  input.addEventListener("input", () => {
-    renderSuggestions(input.value);
-    suggestions.classList.remove("hidden");
-  });
-  input.addEventListener("blur", () => {
-    setTimeout(() => suggestions.classList.add("hidden"), 120);
-  });
+  input.addEventListener("focus", () => { renderSuggestions(input.value); suggestions.classList.remove("hidden"); });
+  input.addEventListener("input", () => { renderSuggestions(input.value); suggestions.classList.remove("hidden"); });
+  input.addEventListener("blur", () => { setTimeout(() => suggestions.classList.add("hidden"), 120); });
 
-  wrap.appendChild(input);
-  wrap.appendChild(display);
-  wrap.appendChild(suggestions);
+  wrap.appendChild(input); wrap.appendChild(display); wrap.appendChild(suggestions);
   return wrap;
 }
 
 function renderBoard() {
   const boardEl = document.getElementById("board");
   boardEl.innerHTML = "";
-  const members = songMembersMap();
-
   for (let i = 0; i < 25; i++) {
     const group = groupOf(i);
-    const isCenter = i === 12;
-    const isOpening = i === 0;
-    const isEncore = i === 24;
+    const isCenter = i === 12, isOpening = i === 0, isEncore = i === 24;
     const special = isOpening || isEncore;
 
     const cell = document.createElement("div");
@@ -725,21 +901,17 @@ function renderBoard() {
 
     if (special) {
       const tag = document.createElement("div");
-      tag.className = "tag";
-      tag.textContent = isOpening ? "OPENING" : "ENCORE";
+      tag.className = "tag"; tag.textContent = isOpening ? "OPENING" : "ENCORE";
       cell.appendChild(tag);
     }
     if (!isCenter && !special) {
       const halfTag = document.createElement("div");
-      halfTag.className = "half-tag";
-      halfTag.textContent = group === "front" ? "前半" : "後半";
+      halfTag.className = "half-tag"; halfTag.textContent = group === "front" ? "前半" : "後半";
       cell.appendChild(halfTag);
     }
-
     if (isCenter) {
       const label = document.createElement("div");
-      label.className = "free-label";
-      label.textContent = "FREE";
+      label.className = "free-label"; label.textContent = "FREE";
       cell.appendChild(label);
     } else {
       cell.appendChild(createSongCombobox(i, special));
@@ -751,25 +923,21 @@ function renderBoard() {
       if (isOpening) isHit = result.openingHit;
       else if (isEncore) isHit = result.encoreHit;
       else {
-        const songs = correctSetlist.map((e) => e.song);
-        isHit = group === "front" ? songs.slice(0, 12).includes(song) : songs.slice(12, 24).includes(song);
+        const songs = eventSetlist.map((e) => e.song);
+        const mid = Math.ceil(songs.length / 2);
+        isHit = group === "front" ? songs.slice(0, mid).includes(song) : songs.slice(mid).includes(song);
       }
       const mark = document.createElement("div");
       mark.className = "hit-mark";
+      mark.style.position = "absolute"; mark.style.bottom = "4px"; mark.style.right = "6px"; mark.style.fontSize = "13px";
       mark.style.color = isHit ? "var(--teal)" : "var(--pink)";
       mark.textContent = isHit ? "●" : "—";
       cell.appendChild(mark);
     }
-
     boardEl.appendChild(cell);
   }
+  setInputsDisabled(isLocked);
 }
-
-const DESKTOP_ORDER = {
-  row1: 1, row2: 2, row3: 3, row4: 4, row5: 5,
-  col1: 6, col2: 7, col3: 8, col4: 9, col5: 10,
-  diag1: 11, diag2: 12,
-};
 
 function renderBetGrid() {
   const grid = document.getElementById("bet-grid");
@@ -781,20 +949,16 @@ function renderBetGrid() {
     const label = document.createElement("span");
     label.textContent = line.label;
     const input = document.createElement("input");
-    input.type = "number";
-    input.min = "0";
-    input.step = "5";
-    input.value = bets[line.id];
+    input.type = "number"; input.min = "0"; input.step = "5"; input.value = bets[line.id];
     input.addEventListener("input", (e) => {
       bets[line.id] = e.target.value === "" ? "" : Number(e.target.value);
       result = null;
-      updatePointsAndBetTotal();
-      renderResult();
+      updatePointsAndBetTotal(); renderResult();
     });
-    row.appendChild(label);
-    row.appendChild(input);
+    row.appendChild(label); row.appendChild(input);
     grid.appendChild(row);
   });
+  setInputsDisabled(isLocked);
 }
 
 function updatePointsAndBetTotal() {
@@ -811,88 +975,118 @@ function updatePointsAndBetTotal() {
 
 function renderSetlistDisplay() {
   const el = document.getElementById("setlist-display");
-  if (!correctSetlist) {
-    el.innerHTML = "";
+  if (!eventSetlist || eventSetlist.length === 0) {
+    el.innerHTML = '<p class="note-text">まだ登録されていません(大会終了後、管理者が登録します)。</p>';
     return;
   }
-  function listHtml(entries, startNum) {
+  const total = eventSetlist.length;
+  const mid = Math.ceil(total / 2);
+  const front = eventSetlist.slice(0, mid);
+  const back = eventSetlist.slice(mid);
+
+  function listHtml(entries, startNum, highlightFirst, highlightLast) {
     return `<ol start="${startNum}" style="margin:0; padding-left:20px; color:var(--muted);">${entries
-      .map((e, i) => `<li style="color:${(startNum === 1 && i === 0) || (startNum === 13 && i === entries.length - 1) ? "var(--gold)" : "var(--muted)"};">${e.song} <span style="opacity:0.7;">(${e.members.join("・")})</span></li>`)
+      .map((e, i) => `<li style="color:${(highlightFirst && i === 0) || (highlightLast && i === entries.length - 1) ? "var(--gold)" : "var(--muted)"};">${e.song} <span style="opacity:0.7;">(${(e.members || []).join("・")})</span></li>`)
       .join("")}</ol>`;
   }
   el.innerHTML = `
+    <p class="note-text" style="margin-bottom:10px;">全${total}曲(OPENING/ENCORE判定は1曲目・${total}曲目)</p>
     <div class="setlist-cols">
-      <div>
-        <div class="col-title">前半(1〜12曲目)</div>
-        ${listHtml(correctSetlist.slice(0, 12), 1)}
-      </div>
-      <div>
-        <div class="col-title">後半(13〜24曲目)</div>
-        ${listHtml(correctSetlist.slice(12, 24), 13)}
-      </div>
-    </div>
-  `;
+      <div><div class="col-title">前半(1〜${mid}曲目)</div>${listHtml(front, 1, true, false)}</div>
+      <div><div class="col-title">後半(${mid + 1}〜${total}曲目)</div>${listHtml(back, mid + 1, false, true)}</div>
+    </div>`;
 }
 
-function renderResult() {
-  const box = document.getElementById("result-box");
-  if (!result) {
-    box.classList.add("hidden");
-    box.innerHTML = "";
-    return;
+function updateConfirmState() {
+  const btn = document.getElementById("confirm-btn");
+  const note = document.getElementById("confirm-note");
+  const saveBtn = document.getElementById("save-btn");
+  const rescoreBtn = document.getElementById("rescore-btn");
+  const setlistReady = eventSetlist && eventSetlist.length > 0;
+
+  if (isFinalized()) {
+    btn.classList.add("hidden");
+    saveBtn.classList.add("hidden");
+    rescoreBtn.classList.toggle("hidden", !setlistReady);
+    note.textContent = setlistReady
+      ? ""
+      : "確定済みです。ライブ後、管理者が正解セトリを登録すると自動的に採点され、ランキングに反映されます。";
+  } else {
+    btn.classList.remove("hidden");
+    btn.disabled = false;
+    saveBtn.classList.remove("hidden");
+    rescoreBtn.classList.add("hidden");
+    note.textContent = "予想がまとまったらいつでも「確定する」を押せます(締切前でもOK)。締切を迎えると自動的に確定扱いになります。";
   }
-  box.classList.remove("hidden");
-  const rows = result.lineResults
-    .map(
-      (l) => `
-      <tr>
-        <td>${l.label}</td>
-        <td class="mono-font">${l.bet}</td>
-        <td class="mono-font">${l.hitCount}/5</td>
-        <td style="color:${l.status === "BINGO" ? "var(--gold)" : l.status === "一部的中" ? "var(--teal)" : "var(--pink)"}; font-weight:600;">${l.status}</td>
-        <td class="mono-font">${l.status === "BINGO" ? `${l.tantouCount}マス (×${Math.pow(2, l.tantouCount)})` : "-"}</td>
-        <td class="mono-font">${l.payout}</td>
-      </tr>`
-    )
-    .join("");
-
-  box.innerHTML = `
-    <h2 class="display-font" style="font-size:24px; margin:0 0 4px;">判定結果</h2>
-    <div style="font-size:12px; color:var(--muted); margin-bottom:14px;">
-      担当アイドル: <span style="color:var(--gold);">${selectedIdol}</span>
-      (BINGO成立ラインの担当曲マス1つにつきスコア×2)
-    </div>
-    <table>
-      <thead><tr><th>ライン</th><th>ベット</th><th>的中数</th><th>結果</th><th>担当曲</th><th>払戻</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
-    <div class="flex-gap" style="font-size:13px; margin-bottom:14px;">
-      <div>ライン精算小計: <span class="mono-font" style="color:var(--text);">${result.subtotal}点</span></div>
-      <div>OPENING的中: <span style="color:${result.openingHit ? "var(--gold)" : "var(--muted)"};">${result.openingHit ? "○ (×2)" : "×"}</span></div>
-      <div>ENCORE的中: <span style="color:${result.encoreHit ? "var(--gold)" : "var(--muted)"};">${result.encoreHit ? "○ (×2)" : "×"}</span></div>
-    </div>
-    <div class="final-total">
-      <span class="label">最終持ち点</span>
-      <span class="value">${result.finalTotal}</span>
-    </div>
-  `;
 }
 
-// ================= アクション =================
-document.getElementById("gen-setlist-btn").addEventListener("click", () => {
-  const chosenSongs = shuffle(SONG_POOL).slice(0, 24);
-  correctSetlist = chosenSongs.map((song) => {
-    const memberCount = 1 + Math.floor(Math.random() * 2);
-    const members = shuffle(IDOL_POOL).slice(0, memberCount);
-    return { song, members };
-  });
-  result = null;
-  renderSetlistDisplay();
-  renderResult();
-});
+function computeScore() {
+  const songs = eventSetlist.map((e) => e.song);
+  const mid = Math.ceil(songs.length / 2);
+  const front = songs.slice(0, mid);
+  const back = songs.slice(mid);
+  const members = songMembersMap();
 
-document.getElementById("judge-btn").addEventListener("click", () => {
-  const errorEl = document.getElementById("judge-error");
+  const hits = board.map((song, i) => {
+    if (i === 12) return true;
+    if (i === 0) return song === songs[0];
+    if (i === 24) return song === songs[songs.length - 1];
+    if (i < 12) return front.includes(song);
+    return back.includes(song);
+  });
+
+  const lineResults = LINES.map((line) => {
+    const hitCount = line.idx.filter((i) => hits[i]).length;
+    const bet = Number(bets[line.id]) || 0;
+    let payout, status, tantouCount = 0;
+    if (hitCount === 5) {
+      status = "BINGO";
+      tantouCount = line.idx.filter((i) => i !== 12 && hits[i] && members[board[i]]?.includes(selectedIdol)).length;
+      payout = bet * 2 * Math.pow(2, tantouCount);
+    } else if (hitCount === 0) {
+      status = "不成立"; payout = 0;
+    } else {
+      status = "一部的中"; payout = Math.round(bet * (hitCount / 5));
+    }
+    return { ...line, hitCount, bet, payout, status, tantouCount };
+  });
+
+  const subtotal = lineResults.reduce((s, l) => s + l.payout, 0);
+  const openingHit = hits[0], encoreHit = hits[24];
+  let multiplier = 1;
+  if (openingHit) multiplier *= 2;
+  if (encoreHit) multiplier *= 2;
+  const finalTotal = subtotal * multiplier;
+  const bingoCount = lineResults.filter((l) => l.status === "BINGO").length;
+
+  return { lineResults, subtotal, openingHit, encoreHit, multiplier, finalTotal, bingoCount };
+}
+
+// 確定済み(自分でボタンを押した、または締切を迎えた)かつ正解セトリが登録され次第、自動で採点してランキングに反映する
+async function tryAutoScore() {
+  if (!isFinalized()) { result = null; renderResult(); return; }
+  if (!eventSetlist || eventSetlist.length !== 24) { result = null; renderResult(); return; }
+
+  result = computeScore();
+  points = result.finalTotal;
+  renderResult();
+  updatePointsAndBetTotal();
+
+  await supabase.from("game_saves").upsert({
+    event_id: selectedEvent.id, user_id: currentUser.id,
+    board, bets, points, selected_idol: selectedIdol, comment,
+    confirmed: true, updated_at: new Date().toISOString(),
+  });
+  await supabase.from("results").upsert({
+    event_id: selectedEvent.id, user_id: currentUser.id,
+    username: currentUser.label, selected_idol: selectedIdol, comment,
+    total_points: result.finalTotal, bingo_count: result.bingoCount, confirmed_at: new Date().toISOString(),
+  });
+}
+
+// ================= 確定(予想のロック。採点は正解セトリ登録後に自動で行われる) =================
+document.getElementById("confirm-btn").addEventListener("click", async () => {
+  const errorEl = document.getElementById("confirm-error");
   errorEl.classList.add("hidden");
 
   const totalBet = Object.values(bets).reduce((s, v) => s + (Number(v) || 0), 0);
@@ -908,89 +1102,71 @@ document.getElementById("judge-btn").addEventListener("click", () => {
     errorEl.classList.remove("hidden");
     return;
   }
-  if (!correctSetlist) {
-    errorEl.textContent = "先に「ダミー正解セトリを生成」を押してください。";
-    errorEl.classList.remove("hidden");
-    return;
-  }
 
-  const songs = correctSetlist.map((e) => e.song);
-  const front = songs.slice(0, 12);
-  const back = songs.slice(12, 24);
-  const members = songMembersMap();
-
-  const hits = board.map((song, i) => {
-    if (i === 12) return true;
-    if (i === 0) return song === songs[0];
-    if (i === 24) return song === songs[23];
-    if (i < 12) return front.includes(song);
-    return back.includes(song);
+  confirmed = true;
+  await supabase.from("game_saves").upsert({
+    event_id: selectedEvent.id, user_id: currentUser.id,
+    board, bets, points, selected_idol: selectedIdol, comment,
+    confirmed: true, updated_at: new Date().toISOString(),
   });
 
-  const lineResults = LINES.map((line) => {
-    const hitCount = line.idx.filter((i) => hits[i]).length;
-    const bet = Number(bets[line.id]) || 0;
-    let payout, status, tantouCount = 0;
-    if (hitCount === 5) {
-      status = "BINGO";
-      tantouCount = line.idx.filter((i) => i !== 12 && hits[i] && members[board[i]]?.includes(selectedIdol)).length;
-      payout = bet * 2 * Math.pow(2, tantouCount);
-    } else if (hitCount === 0) {
-      status = "不成立";
-      payout = 0;
-    } else {
-      status = "一部的中";
-      payout = Math.round(bet * (hitCount / 5));
-    }
-    return { ...line, hitCount, bet, payout, status, tantouCount };
-  });
-
-  const subtotal = lineResults.reduce((s, l) => s + l.payout, 0);
-  const openingHit = hits[0];
-  const encoreHit = hits[24];
-  let multiplier = 1;
-  if (openingHit) multiplier *= 2;
-  if (encoreHit) multiplier *= 2;
-  const finalTotal = subtotal * multiplier;
-
-  result = { lineResults, subtotal, openingHit, encoreHit, multiplier, finalTotal };
-  points = finalTotal;
-  renderBoard();
-  renderResult();
-  updatePointsAndBetTotal();
-  saveGame();
+  renderDeadlineBanner();
+  setInputsDisabled(true);
+  updateConfirmState();
+  tryAutoScore();
 });
+
+document.getElementById("rescore-btn").addEventListener("click", tryAutoScore);
+
 
 document.getElementById("save-btn").addEventListener("click", saveGame);
 
-document.getElementById("new-round-btn").addEventListener("click", () => {
-  board = Array(25).fill(null);
-  bets = Object.fromEntries(LINES.map((l) => [l.id, DEFAULT_BET]));
-  correctSetlist = null;
-  result = null;
-  renderAll();
-  saveGame();
-});
+function renderResult() {
+  const box = document.getElementById("result-box");
+  if (!result) { box.classList.add("hidden"); box.innerHTML = ""; return; }
+  box.classList.remove("hidden");
+  const rows = result.lineResults.map((l) => `
+    <tr>
+      <td>${l.label}</td>
+      <td class="mono-font">${l.bet}</td>
+      <td class="mono-font">${l.hitCount}/5</td>
+      <td style="color:${l.status === "BINGO" ? "var(--gold)" : l.status === "一部的中" ? "var(--teal)" : "var(--pink)"}; font-weight:600;">${l.status}</td>
+      <td class="mono-font">${l.status === "BINGO" ? `${l.tantouCount}マス (×${Math.pow(2, l.tantouCount)})` : "-"}</td>
+      <td class="mono-font">${l.payout}</td>
+    </tr>`).join("");
+
+  box.innerHTML = `
+    <h2 class="display-font" style="font-size:24px; margin:0 0 4px;">確定結果</h2>
+    <div style="font-size:12px; color:var(--muted); margin-bottom:14px;">
+      担当アイドル: <span style="color:var(--gold);">${selectedIdol}</span>(BINGO成立ラインの担当曲マス1つにつきスコア×2)
+    </div>
+    <table>
+      <thead><tr><th>ライン</th><th>ベット</th><th>的中数</th><th>結果</th><th>担当曲</th><th>払戻</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="flex-gap" style="font-size:13px; margin-bottom:14px;">
+      <div>ライン精算小計: <span class="mono-font" style="color:var(--text);">${result.subtotal}点</span></div>
+      <div>OPENING的中: <span style="color:${result.openingHit ? "var(--gold)" : "var(--muted)"};">${result.openingHit ? "○ (×2)" : "×"}</span></div>
+      <div>ENCORE的中: <span style="color:${result.encoreHit ? "var(--gold)" : "var(--muted)"};">${result.encoreHit ? "○ (×2)" : "×"}</span></div>
+    </div>
+    <div class="final-total"><span class="label">最終持ち点</span><span class="value">${result.finalTotal}</span></div>`;
+}
 
 // ---- SNS共有 ----
 document.getElementById("share-generate-btn").addEventListener("click", () => {
   const shareError = document.getElementById("share-error");
   const shareBox = document.getElementById("share-box");
   shareError.classList.add("hidden");
-
   const filledCount = board.filter((s, i) => i === 12 || s).length;
   if (filledCount < 25) {
     shareError.textContent = "すべてのマスに曲を入力してから生成してください(中央はフリー)。";
     shareError.classList.remove("hidden");
     return;
   }
+  const opening = board[0], encore = board[24];
+  const frontRest = board.slice(1, 12), backRest = board.slice(13, 24);
 
-  const opening = board[0];
-  const encore = board[24];
-  const frontRest = board.slice(1, 12);
-  const backRest = board.slice(13, 24);
-
-  let text = "🎫 学園セトリ予想ビンゴ 🎫\n\n";
+  let text = `🎫 ${selectedEvent.name} セトリ予想ビンゴ 🎫\n\n`;
   text += `🎤 1曲目(OPENING)予想: ${opening}\n\n`;
   text += "▼前半(1〜12曲目)予想\n";
   frontRest.forEach((s) => (text += `・${s}\n`));
@@ -998,14 +1174,13 @@ document.getElementById("share-generate-btn").addEventListener("click", () => {
   backRest.forEach((s) => (text += `・${s}\n`));
   text += `\n🎉 ラスト曲(ENCORE)予想: ${encore}\n`;
   text += `\n担当アイドル: ${selectedIdol}\n`;
-
+  if (comment) text += `ひとこと: ${comment}\n`;
   if (result) {
-    const bingoCount = result.lineResults.filter((l) => l.status === "BINGO").length;
-    text += `\n─────\n🏆 判定結果\n`;
+    text += `\n─────\n🏆 確定結果\n`;
     text += `持ち点: ${INITIAL_POINTS} → ${result.finalTotal}点\n`;
-    text += `BINGO成立ライン: ${bingoCount}本\n`;
+    text += `BINGO成立ライン: ${result.bingoCount}本\n`;
   }
-  text += "\n#学マス #セトリ予想ビンゴ";
+  text += "\n#セトリ予想ビンゴ";
 
   document.getElementById("share-text-area").value = text;
   shareBox.classList.remove("hidden");
@@ -1014,17 +1189,141 @@ document.getElementById("share-generate-btn").addEventListener("click", () => {
 
 document.getElementById("share-copy-btn").addEventListener("click", async () => {
   const textarea = document.getElementById("share-text-area");
-  try {
-    await navigator.clipboard.writeText(textarea.value);
-  } catch {
-    textarea.select();
-    document.execCommand("copy");
-  }
+  try { await navigator.clipboard.writeText(textarea.value); }
+  catch { textarea.select(); document.execCommand("copy"); }
   const copied = document.getElementById("share-copied");
   copied.classList.remove("hidden");
   setTimeout(() => copied.classList.add("hidden"), 1800);
 });
 
+// ================= ランキングタブ =================
+async function renderRankingTab() {
+  const wrap = document.getElementById("ranking-table-wrap");
+  const { data, error } = await supabase
+    .from("results")
+    .select("*")
+    .eq("event_id", selectedEvent.id)
+    .order("total_points", { ascending: false })
+    .order("bingo_count", { ascending: false });
+  if (error) { wrap.innerHTML = `<p class="error-text">読み込みに失敗しました: ${error.message}</p>`; return; }
+  if (!data || data.length === 0) {
+    wrap.innerHTML = '<p class="note-text">まだ「確定」した参加者がいません。</p>';
+    return;
+  }
+  const rows = data.map((r, i) => {
+    const rank = i + 1;
+    const rankClass = rank === 1 ? "rank-1" : rank === 2 ? "rank-2" : rank === 3 ? "rank-3" : "";
+    return `<tr>
+      <td class="rank-cell ${rankClass}">${rank}</td>
+      <td>${escapeHtml(r.username)}</td>
+      <td>${escapeHtml(r.selected_idol || "-")}</td>
+      <td class="mono-font">${r.total_points}</td>
+      <td class="mono-font">${r.bingo_count}</td>
+      <td>${escapeHtml(r.comment || "")}</td>
+    </tr>`;
+  }).join("");
+  wrap.innerHTML = `
+    <table>
+      <thead><tr><th>順位</th><th>ユーザー名</th><th>担当アイドル</th><th>総合点</th><th>ビンゴ本数</th><th>ひとこと</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+document.getElementById("ranking-refresh-btn").addEventListener("click", renderRankingTab);
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+// ================= 管理タブ =================
+function renderAdminTab() {
+  document.getElementById("edit-deadline-input").value = toDatetimeLocalValue(selectedEvent.deadline);
+  parsedCsvRows = null;
+  document.getElementById("csv-submit-btn").classList.add("hidden");
+  document.getElementById("admin-preview").innerHTML = "";
+  document.getElementById("csv-error").classList.add("hidden");
+  document.getElementById("csv-status").classList.add("hidden");
+}
+
+document.getElementById("csv-file").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => { document.getElementById("csv-text").value = reader.result; };
+  reader.readAsText(file, "utf-8");
+});
+
+document.getElementById("csv-parse-btn").addEventListener("click", () => {
+  const errEl = document.getElementById("csv-error");
+  const statusEl = document.getElementById("csv-status");
+  errEl.classList.add("hidden"); statusEl.classList.add("hidden");
+
+  const raw = document.getElementById("csv-text").value;
+  let lines = raw.split(/\r?\n/).map((l) => l.trim()).filter((l) => l.length > 0);
+  if (lines.length && /^(曲名|song)/i.test(lines[0])) lines = lines.slice(1);
+
+  if (lines.length < 2) {
+    errEl.textContent = `曲目が少なすぎます(最低2行、1曲目とラスト曲の判定に必要)。現在 ${lines.length}行。`;
+    errEl.classList.remove("hidden");
+    return;
+  }
+
+  const rows = lines.map((line, idx) => {
+    const cols = line.split(",");
+    const song = (cols[0] || "").trim();
+    const membersRaw = (cols[1] || "").trim();
+    const members = membersRaw ? membersRaw.split(/[\/／、,]/).map((m) => m.trim()).filter(Boolean) : [];
+    return { position: idx + 1, song, members };
+  });
+
+  if (rows.some((r) => !r.song)) {
+    errEl.textContent = "曲名が空の行があります。";
+    errEl.classList.remove("hidden");
+    return;
+  }
+
+  parsedCsvRows = rows;
+  const preview = document.getElementById("admin-preview");
+  preview.innerHTML = `<table><thead><tr><th>#</th><th>曲名</th><th>担当アイドル</th></tr></thead><tbody>${rows
+    .map((r) => `<tr><td class="mono-font">${r.position}</td><td>${escapeHtml(r.song)}</td><td>${escapeHtml(r.members.join("・") || "-")}</td></tr>`)
+    .join("")}</tbody></table>`;
+  document.getElementById("csv-submit-btn").classList.remove("hidden");
+});
+
+document.getElementById("csv-submit-btn").addEventListener("click", async () => {
+  if (!parsedCsvRows) return;
+  const errEl = document.getElementById("csv-error");
+  const statusEl = document.getElementById("csv-status");
+  errEl.classList.add("hidden"); statusEl.classList.add("hidden");
+
+  const { error: delError } = await supabase.from("event_setlists").delete().eq("event_id", selectedEvent.id);
+  if (delError) { errEl.textContent = "登録に失敗しました: " + delError.message; errEl.classList.remove("hidden"); return; }
+
+  const rowsToInsert = parsedCsvRows.map((r) => ({ event_id: selectedEvent.id, position: r.position, song: r.song, members: r.members }));
+  const { error: insError } = await supabase.from("event_setlists").insert(rowsToInsert);
+  if (insError) { errEl.textContent = "登録に失敗しました: " + insError.message; errEl.classList.remove("hidden"); return; }
+
+  statusEl.textContent = "✓ 正解セトリを登録しました";
+  statusEl.classList.remove("hidden");
+  await loadEventSetlist();
+  renderSetlistDisplay();
+  updateConfirmState();
+  tryAutoScore();
+});
+
+document.getElementById("edit-deadline-btn").addEventListener("click", async () => {
+  const val = document.getElementById("edit-deadline-input").value;
+  const statusEl = document.getElementById("edit-deadline-status");
+  if (!val) return;
+  const { error } = await supabase.from("events").update({ deadline: new Date(val).toISOString() }).eq("id", selectedEvent.id);
+  if (error) { statusEl.textContent = "更新に失敗しました: " + error.message; statusEl.classList.remove("hidden"); return; }
+  selectedEvent.deadline = new Date(val).toISOString();
+  isLocked = new Date() >= new Date(selectedEvent.deadline);
+  statusEl.textContent = "✓ 締切を更新しました";
+  statusEl.classList.remove("hidden");
+  renderDeadlineBanner();
+  updateConfirmState();
+  await loadEvents();
+});
 </script>
 </body>
 </html>
