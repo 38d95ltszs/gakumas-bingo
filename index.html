@@ -1934,3 +1934,10 @@ document.getElementById("delete-event-btn").addEventListener("click", async () =
     return;
   }
   selectedEvent = null;
+  document.getElementById("event-content").classList.add("hidden");
+  document.getElementById("event-select").value = "";
+  await loadEvents();
+});
+</script>
+</body>
+</html>
