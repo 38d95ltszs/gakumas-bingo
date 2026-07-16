@@ -460,6 +460,48 @@ td, th { padding: 6px; }
           </div>
           <div id="bet-grid"></div>
           <p id="bet-glow-note" class="note-text hidden" style="margin-top:10px;">✨ 光っている枠はBINGO成立ライン!</p>
+
+          <div style="margin-top:24px; padding-top:20px; border-top:1px solid var(--line);">
+            <div class="section-header">
+              <h3 class="display-font" style="font-size:18px; margin:0;">期待値シミュレーター</h3>
+              <button class="help-btn" data-help="evsim">？</button>
+            </div>
+            <p class="note-text" style="margin-bottom:12px;">正解は分からないので、確率は自分の自信度に合わせて調整してほしい。今のベット配分でブラウザ内シミュレーションする。</p>
+            <div class="flex-gap" style="gap:18px; margin-bottom:12px;">
+              <div>
+                <label style="display:block; font-size:11px; color:var(--muted); margin-bottom:4px;">通常マスの的中確率(%)</label>
+                <input id="ev-cell-prob" type="number" min="0" max="100" step="1" value="25" style="width:70px;">
+              </div>
+              <div>
+                <label style="display:block; font-size:11px; color:var(--muted); margin-bottom:4px;">OPENING/ENCOREの的中確率(%)</label>
+                <input id="ev-special-prob" type="number" min="0" max="100" step="0.1" value="2" style="width:70px;">
+              </div>
+              <div>
+                <label style="display:block; font-size:11px; color:var(--muted); margin-bottom:4px;">担当曲(ボーナス)である確率(%)</label>
+                <input id="ev-tantou-prob" type="number" min="0" max="100" step="1" value="12" style="width:70px;">
+              </div>
+            </div>
+            <button id="ev-run-btn" class="btn-primary btn-sm">計算する</button>
+            <div id="ev-error" class="error-text hidden" style="margin-top:8px;"></div>
+            <div id="ev-result" class="hidden" style="margin-top:14px;">
+              <div class="flex-gap" style="gap:24px;">
+                <div>
+                  <div class="stat-label">期待値(平均)</div>
+                  <div id="ev-mean" class="stat-value mono-font" style="font-size:20px;"></div>
+                </div>
+                <div>
+                  <div class="stat-label">中央値</div>
+                  <div id="ev-median" class="stat-value mono-font" style="font-size:20px;"></div>
+                </div>
+                <div>
+                  <div class="stat-label">上位10%ライン</div>
+                  <div id="ev-p90" class="stat-value mono-font" style="font-size:20px;"></div>
+                </div>
+              </div>
+              <p id="ev-bingo-prob" class="note-text" style="margin-top:8px;"></p>
+            </div>
+          </div>
+
           <div class="flex-gap" style="margin-top:16px;">
             <button id="save-btn-bet" class="btn-gold btn-sm">保存する</button>
             <span id="save-status-bet" class="ok-text hidden"></span>
@@ -719,6 +761,10 @@ const HELP_TEXTS = {
   trend: {
     title: "トレンドについて",
     body: "確定済みの参加者全員の予想を集計した「みんなの予想傾向」です。1曲目(OPENING)予想・ラスト曲(ENCORE)予想・全体で人気の曲を、それぞれ得票数の多い順に表示します。個人の予想内容(誰がどのマスに何を入れたか)は分からない、集計値のみの表示です。通常は数時間おきに自動更新され、大会の管理者は「今すぐ集計する」でその場で更新できます。",
+  },
+  evsim: {
+    title: "期待値シミュレーターについて",
+    body: "正解セトリはまだ分からないので、「通常マスの的中確率」「OPENING/ENCOREの的中確率」「担当曲(ボーナス)である確率」を自分の自信度に合わせて入力し、今のベット配分でブラウザ内シミュレーション(20,000回試行)する。結果は期待値(平均)・中央値・上位10%ラインと、BINGOが1本以上成立する確率の目安を表示する。あくまで自分で設定した確率での仮の試算であり、実際の結果を保証するものではない。",
   },
   sns: {
     title: "SNS共有について",
@@ -1429,6 +1475,74 @@ function randomDistributeBets() {
   renderResult();
 }
 document.getElementById("bet-random-btn").addEventListener("click", randomDistributeBets);
+
+// ================= 期待値シミュレーター =================
+function runExpectedValueSim() {
+  const errEl = document.getElementById("ev-error");
+  errEl.classList.add("hidden");
+
+  const cellProb = Number(document.getElementById("ev-cell-prob").value) / 100;
+  const specialProb = Number(document.getElementById("ev-special-prob").value) / 100;
+  const tantouProb = Number(document.getElementById("ev-tantou-prob").value) / 100;
+
+  if ([cellProb, specialProb, tantouProb].some((p) => isNaN(p) || p < 0 || p > 1)) {
+    errEl.textContent = "確率は0〜100の数値で入力してください。";
+    errEl.classList.remove("hidden");
+    return;
+  }
+
+  const TRIALS = 20000;
+  const finals = [];
+  let bingoCount = 0;
+
+  for (let t = 0; t < TRIALS; t++) {
+    const hits = new Array(25);
+    hits[12] = true;
+    for (let i = 0; i < 25; i++) {
+      if (i === 12) continue;
+      if (!board[i]) { hits[i] = false; continue; }
+      const p = (i === 0 || i === 24) ? specialProb : cellProb;
+      hits[i] = Math.random() < p;
+    }
+
+    let subtotal = 0;
+    let lineBingo = 0;
+    LINES.forEach((line) => {
+      const hitCount = line.idx.filter((i) => hits[i]).length;
+      const bet = Number(bets[line.id]) || 0;
+      let payout;
+      if (hitCount === 5) {
+        lineBingo++;
+        let tantouCount = 0;
+        line.idx.forEach((i) => { if (i !== 12 && hits[i] && Math.random() < tantouProb) tantouCount++; });
+        payout = bet * line.mult * Math.pow(2, tantouCount);
+      } else if (hitCount === 0) {
+        payout = 0;
+      } else {
+        payout = Math.round(bet * (hitCount / 5));
+      }
+      subtotal += payout;
+    });
+
+    let mult = 1;
+    if (hits[0]) mult *= 2;
+    if (hits[24]) mult *= 2;
+    finals.push(subtotal * mult);
+    if (lineBingo >= 1) bingoCount++;
+  }
+
+  finals.sort((a, b) => a - b);
+  const mean = finals.reduce((s, v) => s + v, 0) / TRIALS;
+  const median = finals[Math.floor(TRIALS * 0.5)];
+  const p90 = finals[Math.floor(TRIALS * 0.9)];
+
+  document.getElementById("ev-mean").textContent = Math.round(mean).toLocaleString();
+  document.getElementById("ev-median").textContent = Math.round(median).toLocaleString();
+  document.getElementById("ev-p90").textContent = Math.round(p90).toLocaleString();
+  document.getElementById("ev-bingo-prob").textContent = `BINGO成立(1本以上)する確率の目安: ${((bingoCount / TRIALS) * 100).toFixed(2)}%`;
+  document.getElementById("ev-result").classList.remove("hidden");
+}
+document.getElementById("ev-run-btn").addEventListener("click", runExpectedValueSim);
 
 function renderLineIndicatorMini() {
   const mini = document.getElementById("line-indicator-mini");
