@@ -161,7 +161,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   padding: 2px 4px; position: relative; cursor: pointer; border-radius: 6px;
 }
 .song-display:active { background: rgba(0,0,0,0.05); }
-.song-display.empty { color: var(--muted); font-style: italic; }
+.song-display.empty { color: var(--muted); font-style: normal; font-size: 20px; }
 .song-display .clear-btn { position: absolute; top: 0; right: 0; background: none; border: none; color: var(--muted); font-size: 13px; line-height: 1; padding: 3px 5px; font-weight: 400; }
 .song-display .clear-btn:hover { color: var(--pink); }
 #board.locked .song-display { cursor: default; pointer-events: none; }
@@ -1079,7 +1079,7 @@ function createSongCell(i, special) {
 
   const display = document.createElement("div");
   display.className = "song-display" + (board[i] ? "" : " empty");
-  display.textContent = board[i] || "タップ！";
+  display.textContent = board[i] || "＋";
   display.addEventListener("click", () => openSongPicker(i));
 
   if (board[i]) {
