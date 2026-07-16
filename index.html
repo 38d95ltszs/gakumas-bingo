@@ -369,12 +369,12 @@ td, th { padding: 6px; }
         <!-- ユーザー設定 -->
         <div class="card">
           <div class="section-header">
-            <h2 style="margin:0;">ユーザー設定</h2>
+            <h2 style="margin:0;">プロデューサー名刺</h2>
             <button class="help-btn" data-help="user-settings">？</button>
           </div>
           <div class="user-settings-row">
             <div>
-              <div class="stat-label" style="margin-bottom:4px;">ユーザー名</div>
+              <div class="stat-label" style="margin-bottom:4px;">プロデューサー名</div>
               <input id="username-input" type="text" maxlength="10" placeholder="表示名(10字まで)">
             </div>
             <div>
@@ -414,7 +414,7 @@ td, th { padding: 6px; }
         <!-- セットリストビンゴ -->
         <div class="card">
           <div class="section-header">
-            <h2 style="margin:0;">セットリストビンゴ</h2>
+            <h2 style="margin:0;">セトリ予想ビンゴ</h2>
             <div class="flex-gap" style="gap:8px;">
               <button id="board-random-btn" class="btn-ghost btn-sm">おまかせで埋める</button>
               <button class="help-btn" data-help="board">？</button>
@@ -436,7 +436,7 @@ td, th { padding: 6px; }
         <!-- ベット -->
         <div class="card">
           <div class="section-header">
-            <h2 style="margin:0;">ベット</h2>
+            <h2 style="margin:0;">夢に賭ける</h2>
             <div class="flex-gap" style="gap:8px;">
               <button id="bet-random-btn" class="btn-ghost btn-sm">おまかせで配分</button>
               <button class="help-btn" data-help="bet">？</button>
@@ -701,19 +701,19 @@ const SHOW_IDOL_MESSAGES = false;
 
 const HELP_TEXTS = {
   "user-settings": {
-    title: "ユーザー設定について",
-    body: "ユーザー名(10字まで)・ひとこと(20字まで)・担当アイドルを設定します。ユーザー名とひとことは、ランキングで他の参加者に表示されるので、個人情報・誹謗中傷・他の人を不快にさせる言葉は書かないでください。担当アイドルは「アイドル名(C.V.声優名)」の形式で選択し、正解セトリ側の歌唱者(声優名)と一致するかどうかでボーナス判定を行います。入力しただけではサーバーに保存されないので、下の「保存する」を押してください。",
+    title: "プロデューサー名刺について",
+    body: "プロデューサー名(10字まで)・ひとこと(20字まで)・担当アイドルを設定します。プロデューサー名とひとことは、ランキングで他の参加者に表示されるので、個人情報・誹謗中傷・他の人を不快にさせる言葉は書かないでください。担当アイドルは「アイドル名(C.V.声優名)」の形式で選択し、正解セトリ側の歌唱者(声優名)と一致するかどうかでボーナス判定を行います。入力しただけではサーバーに保存されないので、下の「保存する」を押してください。",
   },
   "after-setlist": {
     title: "正解登録後に表示について",
     body: "大会終了後、管理者が正解セトリを登録すると、ここに正解の一覧(モーダル)と、あなたの予想の採点結果(合計ジュエル・ライン別の内訳)が自動的に表示されます。「確定する」を押していない予想は採点されません。",
   },
   board: {
-    title: "セットリストビンゴについて",
+    title: "セトリ予想ビンゴについて",
     body: "5×5マスに「この曲が来そう」という予想を入れます。左上(OPENING)は1曲目、右下(ENCORE)はラスト曲専用で、曲順まで当てる必要があります。それ以外のマスは、セトリ全体のどこかに入っていれば的中(曲順・前半後半は問いません)。中央はフリーマスで常に的中扱いです。正解登録後は、BINGO成立したラインのマスが光ります。",
   },
   bet: {
-    title: "ベットについて",
+    title: "夢に賭けるについて",
     body: "縦・横・斜めの12ラインそれぞれに、現在のジュエルを自由に配分します。合計がジュエル残高とぴったり同じになる必要があります。1ラインの5マス全部が的中(BINGO)すると、そのラインのベットが倍率に応じて返ってきます。倍率はライン毎に難易度で変わります: 斜め↘(OPENING・ENCORE両方必須)は×10、OPENING/ENCOREのどちらか片方を含むライン(横1・横5・縦1・縦5)は×7、FREEを経由するライン(横3・縦3・斜め↙)は×3、それ以外(横2・横4・縦2・縦4)は×5。担当アイドルの曲がBINGOラインに含まれていると、マス1つにつきさらに2倍。正解登録後は、BINGO成立したラインの枠が光ります。",
   },
   trend: {
@@ -726,7 +726,7 @@ const HELP_TEXTS = {
   },
   ranking: {
     title: "ランキングについて",
-    body: "正解セトリ登録前(結果発表前)は、「確定」した参加者をユーザー名・担当アイドル・ひとことだけ、確定した順に表示します。正解セトリ登録後は、獲得ジュエルの多い順(同点はBINGO本数順)に切り替わり、ジュエル数とガシャ換算(ジュエル数÷300連)も表示されます。他の参加者の予想内容(マスの中身)自体は見えません。",
+    body: "正解セトリ登録前(結果発表前)は、「確定」した参加者をプロデューサー名・担当アイドル・ひとことだけ、確定した順に表示します。正解セトリ登録後は、獲得ジュエルの多い順(同点はBINGO本数順)に切り替わり、ジュエル数とガシャ換算(ジュエル数÷300連)も表示されます。他の参加者の予想内容(マスの中身)自体は見えません。",
   },
   admin: {
     title: "大会の管理について",
