@@ -1802,7 +1802,7 @@ async function generateShareImage() {
   if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch {} }
 
   const canvas = document.getElementById("share-canvas");
-  canvas.width = 1080; canvas.height = 1620;
+  canvas.width = 1080; canvas.height = result ? 1754 : 1620;
   const ctx = canvas.getContext("2d");
   const W = canvas.width, H = canvas.height;
 
@@ -1822,10 +1822,27 @@ async function generateShareImage() {
   ctx.font = "600 26px 'Inter', sans-serif";
   ctx.fillText(selectedEvent.name, W / 2, 130);
 
-  // ---- ビンゴ盤 ----
   const boardSize = 900;
   const boardX = (W - boardSize) / 2;
-  const boardY = 190;
+  let cursorY = 190;
+
+  // ---- 最終ジュエル(結果確定後のみ) ----
+  if (result) {
+    const bannerH = 110;
+    drawRoundedRect(ctx, boardX, cursorY, boardSize, bannerH, 18, "#fbf3e4");
+    ctx.textAlign = "center";
+    ctx.font = "700 20px 'Inter', sans-serif";
+    ctx.fillStyle = "#9c8b76";
+    ctx.fillText("最終ジュエル", W / 2, cursorY + 18);
+    ctx.font = "800 56px 'JetBrains Mono', monospace";
+    ctx.fillStyle = "#e8791e";
+    ctx.fillText(result.finalTotal.toLocaleString(), W / 2, cursorY + 42);
+    cursorY += bannerH + 24;
+  }
+
+  // ---- ビンゴ盤 ----
+  const boardY = cursorY;
+  const glowSet = bingoGlowIndices();
   drawRoundedRect(ctx, boardX, boardY, boardSize, boardSize, 20, "#fbf3e4");
   const pad = 20, cellGap = 10;
   const cellSize = (boardSize - pad * 2 - cellGap * 2) / 3;
@@ -1835,7 +1852,8 @@ async function generateShareImage() {
     const y = boardY + pad + row * (cellSize + cellGap);
     const isOpening = i === OPENING_IDX, isEncore = i === ENCORE_IDX;
     const special = isOpening || isEncore;
-    drawRoundedRect(ctx, x, y, cellSize, cellSize, 12, "#f3e4cb");
+    const isBingoCell = glowSet.has(i);
+    drawRoundedRect(ctx, x, y, cellSize, cellSize, 12, isBingoCell ? "#ffd977" : "#f3e4cb");
     if (special) { ctx.strokeStyle = "#e8791e"; ctx.lineWidth = 3; ctx.strokeRect(x + 1.5, y + 1.5, cellSize - 3, cellSize - 3); }
     if (special) {
       ctx.textAlign = "center";
