@@ -180,10 +180,10 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 .cell { aspect-ratio: 4 / 5; }
 
 /* ---------- 汎用モーダル(曲名選択・正解セトリ表示で共用) ---------- */
-#song-picker-backdrop, #setlist-modal-backdrop, #help-modal-backdrop {
+#song-picker-backdrop, #help-modal-backdrop {
   position: fixed; inset: 0; background: rgba(30,15,5,0.55); z-index: 200;
 }
-#song-picker-modal, #setlist-modal, #help-modal {
+#song-picker-modal, #help-modal {
   position: fixed; z-index: 201; background: var(--card); border: 1px solid var(--line);
   display: flex; flex-direction: column;
   left: 50%; top: auto; bottom: 0; transform: translateX(-50%);
@@ -365,7 +365,7 @@ td, th { padding: 6px; }
         <div id="deadline-banner" class="deadline-banner"></div>
 
         <!-- ユーザー設定 -->
-        <div class="card">
+        <div id="producer-card" class="card">
           <div class="section-header">
             <h2 style="margin:0;">プロデューサー名刺</h2>
             <button class="help-btn" data-help="user-settings">？</button>
@@ -391,21 +391,11 @@ td, th { padding: 6px; }
 
         <!-- 正解登録後に表示 -->
         <div id="after-setlist-section" class="hidden">
-          <div id="after-setlist-header-card" class="card">
-            <div class="flex-gap" style="justify-content:space-between;">
-              <h2 style="margin:0;">正解セトリが登録されました</h2>
-              <div class="flex-gap" style="gap:8px;">
-                <button id="open-setlist-modal-btn" class="btn-ghost btn-sm">正解セトリを見る</button>
-                <button class="help-btn" data-help="after-setlist">？</button>
-              </div>
-            </div>
-            <p class="lede" style="margin-top:8px;">確定済みの予想は自動的に採点されます。</p>
-          </div>
           <div id="result-box" class="card hidden" style="border-color: var(--gold);"></div>
         </div>
 
         <!-- セットリストビンゴ -->
-        <div class="card">
+        <div id="board-card" class="card">
           <div class="section-header">
             <h2 style="margin:0;">セトリ予想</h2>
             <div id="board-controls" class="flex-gap" style="gap:8px;">
@@ -422,7 +412,7 @@ td, th { padding: 6px; }
         </div>
 
         <!-- ベット -->
-        <div class="card">
+        <div id="bet-card" class="card">
           <div class="section-header">
             <h2 style="margin:0;">夢に賭ける</h2>
             <div id="bet-controls" class="flex-gap" style="gap:8px;">
@@ -536,8 +526,8 @@ td, th { padding: 6px; }
         </div>
 
         <div class="card">
-          <h2>トレンド集計</h2>
-          <p class="lede">確定済み参加者の予想を集計して「トレンド」タブに反映する。通常は数時間おきに自動集計されるが、今すぐ反映したい場合はここから実行できる。</p>
+          <h2>流行集計</h2>
+          <p class="lede">確定済み参加者の予想を集計して「流行」タブに反映する。通常は数時間おきに自動集計されるが、今すぐ反映したい場合はここから実行できる。</p>
           <button id="trigger-trend-btn" class="btn-gold btn-sm">今すぐ集計する</button>
           <div id="trigger-trend-status" class="ok-text hidden" style="margin-top:8px;"></div>
         </div>
@@ -563,19 +553,18 @@ td, th { padding: 6px; }
 
   <footer class="wrap app-footer">
     <p>
-      <a href="https://imas-db.jp/" target="_blank" rel="noopener">アイマスDB</a>さま<br>
+      アイマスDB様<br>
       <a href="https://imas-db.jp/" target="_blank" rel="noopener">https://imas-db.jp/</a>
     </p>
     <p>
-      アイマス楽曲DB ふじわらはじめさま<br>
+      アイマス楽曲DB ふじわらはじめ様<br>
       <a href="https://fujiwarahaji.me/sitemap/musiclist" target="_blank" rel="noopener">https://fujiwarahaji.me/sitemap/musiclist</a>
     </p>
     <p>
-      楽曲・セットリストデータ登録の参照にさせていただきました。<br>
-      ゲームの仕様に合わせてデータは一部、改変を行なっています。<br>
-      誤りがあった場合、上記のみなさまの責任ではありません。
+      楽曲およびセットリストデータの登録につきましては、上記サイトを参照させていただいております。<br>
+      なお、ゲーム仕様に合わせ、データの一部について改変を加えております。データに誤りがございました場合、その責任は当方にあり、上記サイト様には一切関係がございませんことをご了承ください。
     </p>
-    <p>このアプリは、アイドルマスター、および、バンダイナムコ社とは無関係の、非公式アプリです。</p>
+    <p>また、本アプリは「アイドルマスター」シリーズおよび株式会社バンダイナムコエンターテインメントとは一切関係のない、非公式のファンアプリです。</p>
   </footer>
 
   <!-- ===== ヘルプモーダル ===== -->
@@ -586,16 +575,6 @@ td, th { padding: 6px; }
       <button id="help-modal-close" class="btn-ghost btn-sm">閉じる</button>
     </div>
     <div id="help-modal-body" class="picker-list" style="font-size:13px; line-height:1.7; color:var(--text);"></div>
-  </div>
-
-  <!-- ===== 正解セトリ表示モーダル ===== -->
-  <div id="setlist-modal-backdrop" class="hidden"></div>
-  <div id="setlist-modal" class="hidden">
-    <div class="picker-header">
-      <span class="display-font" style="font-size:18px;">正解セトリ</span>
-      <button id="setlist-modal-close" class="btn-ghost btn-sm">閉じる</button>
-    </div>
-    <div id="setlist-modal-body" class="picker-list"></div>
   </div>
 
   <!-- ===== 曲名選択モーダル(検索ピッカー) ===== -->
@@ -717,10 +696,6 @@ const HELP_TEXTS = {
     title: "プロデューサー名刺について",
     body: "プロデューサー名(10字まで)・ひとこと(20字まで)・担当アイドルを設定します。プロデューサー名とひとことは、ランキングで他の参加者に表示されるので、個人情報・誹謗中傷・他の人を不快にさせる言葉は書かないでください。担当アイドルは「アイドル名(C.V.声優名)」の形式で選択し、正解セトリ側の歌唱者(声優名)と一致するかどうかでボーナス判定を行います。入力しただけではサーバーに保存されないので、下の「保存する」を押してください。",
   },
-  "after-setlist": {
-    title: "正解登録後に表示について",
-    body: "大会終了後、管理者が正解セトリを登録すると、ここに正解の一覧(モーダル)と、あなたの予想の採点結果(合計ジュエル・ライン別の内訳)が自動的に表示されます。「確定する」を押していない予想は採点されません。",
-  },
   board: {
     title: "セトリ予想について",
     body: "3×3マスに「この曲が来そう」という予想を入れます。左上(OPENING)は1曲目、右下(ENCORE)はラスト曲専用で、曲順まで当てる必要があります。それ以外のマスは、セトリ全体のどこかに入っていれば的中(曲順・前半後半は問いません)。正解登録後は、BINGO成立したラインのマスが光ります。",
@@ -743,7 +718,7 @@ const HELP_TEXTS = {
   },
   admin: {
     title: "大会の管理について",
-    body: "この大会の作成者だけが使える機能です。正解セトリ(実際に演奏された曲と歌唱者)をCSVで登録・上書きできるほか、トレンドの手動集計、締切時間の変更、大会そのものの削除ができます。候補曲・担当アイドルは全大会共通の静的ファイル(songs.json / casts.json)を使うため、大会ごとの登録は不要です。正解セトリを登録すると、確定済みの参加者全員がその場で自動的に採点されます(各参加者がログインし直す必要はありません)。CSVを修正した場合などは「確定済み全員を再採点する」で再実行できます。歌唱者は声優(CV)名で記録し、参加者の担当アイドル選択もCV名で照合されます。削除は元に戻せません。",
+    body: "この大会の作成者だけが使える機能です。正解セトリ(実際に演奏された曲と歌唱者)をCSVで登録・上書きできるほか、流行の手動集計、締切時間の変更、大会そのものの削除ができます。候補曲・担当アイドルは全大会共通の静的ファイル(songs.json / casts.json)を使うため、大会ごとの登録は不要です。正解セトリを登録すると、確定済みの参加者全員がその場で自動的に採点されます(各参加者がログインし直す必要はありません)。CSVを修正した場合などは「確定済み全員を再採点する」で再実行できます。歌唱者は声優(CV)名で記録し、参加者の担当アイドル選択もCV名で照合されます。削除は元に戻せません。",
   },
 };
 
@@ -1090,7 +1065,7 @@ function switchTab(tab) {
   if (tab === "ranking") renderRankingTab();
   if (tab === "admin") renderAdminTab();
   if (tab === "predict") {
-    isLocked = new Date() >= new Date(selectedEvent.deadline);
+    isLocked = (eventSetlist && eventSetlist.length > 0) || new Date() >= new Date(selectedEvent.deadline);
     renderDeadlineBanner();
     setInputsDisabled(isLocked);
     updateConfirmState();
@@ -1101,7 +1076,8 @@ function switchTab(tab) {
 
 function updateFloatSaveVisibility() {
   const wrap = document.getElementById("float-save-wrap");
-  wrap.classList.toggle("hidden", currentTab !== "predict" || isLocked);
+  const setlistReady = eventSetlist && eventSetlist.length > 0;
+  wrap.classList.toggle("hidden", currentTab !== "predict" || isLocked || setlistReady);
 }
 document.querySelectorAll(".tab-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -1134,7 +1110,7 @@ function renderDeadlineBanner() {
     el.textContent = `🔒 締切済み(締切: ${fmtDateTime(selectedEvent.deadline)}) — 予想内容は閲覧のみです`;
   } else if (confirmed) {
     el.className = "deadline-banner open";
-    el.textContent = `✅ 確定済みです(締切: ${fmtDateTime(selectedEvent.deadline)}まで、トレンドを見ながら何度でも調整できます)`;
+    el.textContent = `✅ 確定済みです(締切: ${fmtDateTime(selectedEvent.deadline)}まで、流行を見ながら何度でも調整できます)`;
   } else {
     el.className = "deadline-banner open";
     el.textContent = `📝 締切: ${fmtDateTime(selectedEvent.deadline)} まで編集できます`;
@@ -1472,34 +1448,7 @@ function renderSetlistDisplay() {
   const section = document.getElementById("after-setlist-section");
   const setlistReady = eventSetlist && eventSetlist.length > 0;
   section.classList.toggle("hidden", !setlistReady);
-  if (!setlistReady) return;
-
-  const total = eventSetlist.length;
-  const itemsHtml = eventSetlist
-    .map((e, i) => {
-      const isFirst = i === 0, isLast = i === total - 1;
-      const color = (isFirst || isLast) ? "var(--gold)" : "var(--muted)";
-      const badge = isFirst ? ' <span style="color:var(--gold); font-size:11px;">(OPENING)</span>'
-        : isLast ? ' <span style="color:var(--gold); font-size:11px;">(ENCORE)</span>' : "";
-      return `<li style="color:${color};">${e.song}${badge} <span style="opacity:0.7;">(${(e.members || []).join("・")})</span></li>`;
-    })
-    .join("");
-  document.getElementById("setlist-modal-body").innerHTML = `
-    <p class="note-text" style="margin-bottom:10px;">全${total}曲</p>
-    <ol style="margin:0; padding-left:32px; color:var(--muted);">${itemsHtml}</ol>`;
 }
-
-function openSetlistModal() {
-  document.getElementById("setlist-modal-backdrop").classList.remove("hidden");
-  document.getElementById("setlist-modal").classList.remove("hidden");
-}
-function closeSetlistModal() {
-  document.getElementById("setlist-modal-backdrop").classList.add("hidden");
-  document.getElementById("setlist-modal").classList.add("hidden");
-}
-document.getElementById("open-setlist-modal-btn").addEventListener("click", openSetlistModal);
-document.getElementById("setlist-modal-close").addEventListener("click", closeSetlistModal);
-document.getElementById("setlist-modal-backdrop").addEventListener("click", closeSetlistModal);
 
 function updateConfirmState() {
   const postlockCard = document.getElementById("postlock-card");
@@ -1518,19 +1467,16 @@ function updateConfirmState() {
   updateFloatSaveVisibility();
 }
 
-// 結果確定後(締切済み かつ 正解セトリ登録済み)は、予想タブを
-// 「プロデューサー名刺・ビンゴ・列のベット・スコア・SNS共有」のみのシンプル表示にする
+// 正解セトリが登録されたら、予想タブは「結果・SNS共有」だけのシンプル表示にする
+// (プロデューサー名刺・ビンゴ・ベットの入力欄・締切後案内は非表示)
 function applyFinalResultsView() {
-  const setlistReady = eventSetlist && eventSetlist.length > 0;
-  const showFinal = isLocked && setlistReady;
+  const showFinal = eventSetlist && eventSetlist.length > 0;
 
   document.getElementById("deadline-banner").classList.toggle("hidden", showFinal);
-  document.getElementById("after-setlist-header-card").classList.toggle("hidden", showFinal);
-  document.getElementById("board-controls").classList.toggle("hidden", showFinal);
-  const legendEl = document.querySelector("#tab-predict .legend");
-  if (legendEl) legendEl.classList.toggle("hidden", showFinal);
-  document.getElementById("bet-controls").classList.toggle("hidden", showFinal);
-  document.getElementById("bet-stat-row").classList.toggle("hidden", showFinal);
+  document.getElementById("producer-card").classList.toggle("hidden", showFinal);
+  document.getElementById("board-card").classList.toggle("hidden", showFinal);
+  document.getElementById("bet-card").classList.toggle("hidden", showFinal);
+  if (showFinal) document.getElementById("postlock-card").classList.add("hidden");
 }
 
 function computeScoreCore(boardArg, betsArg, idolCvArg, songs, members) {
@@ -1697,23 +1643,31 @@ function renderResult() {
   const box = document.getElementById("result-box");
   if (!result) { box.classList.add("hidden"); box.innerHTML = ""; return; }
   box.classList.remove("hidden");
-  const rows = result.lineResults.map((l) => `
-    <tr>
-      <td>${l.label}</td>
-      <td class="mono-font">${l.bet}</td>
-      <td class="mono-font">${l.hitCount}/5</td>
-      <td style="color:${l.status === "BINGO" ? "var(--gold)" : l.status === "一部的中" ? "var(--teal)" : "var(--pink)"}; font-weight:600;">${l.status}${l.status === "BINGO" ? ` (基本×${l.mult})` : ""}</td>
-      <td class="mono-font">${l.status === "BINGO" ? `${l.tantouCount}マス (×${Math.pow(2, l.tantouCount)})` : "-"}</td>
-      <td class="mono-font">${l.payout}</td>
-    </tr>`).join("");
+
+  const rows = BET_GROUPS.map((group) => {
+    const groupLines = result.lineResults.filter((l) => group.lineIds.includes(l.id));
+    const betSum = groupLines.reduce((s, l) => s + l.bet, 0);
+    const bingoCount = groupLines.filter((l) => l.status === "BINGO").length;
+    const payoutSum = groupLines.reduce((s, l) => s + l.payout, 0);
+    return `
+      <tr>
+        <td>${group.label} <span class="mono-font" style="color:var(--gold); font-size:11px;">[×${group.mult}]</span></td>
+        <td class="mono-font">${betSum.toLocaleString()}</td>
+        <td class="mono-font" style="color:${bingoCount > 0 ? "var(--gold)" : "var(--muted)"}; font-weight:600;">${bingoCount}/${group.lineIds.length}本</td>
+        <td class="mono-font">${payoutSum.toLocaleString()}</td>
+      </tr>`;
+  }).join("");
 
   box.innerHTML = `
-    <h2 class="display-font" style="font-size:24px; margin:0 0 4px;">確定結果</h2>
+    <div class="flex-gap" style="justify-content:space-between; margin-bottom:4px;">
+      <h2 class="display-font" style="font-size:24px; margin:0;">確定結果</h2>
+      <a href="https://imas-db.jp/" target="_blank" rel="noopener" class="btn-ghost btn-sm" style="text-decoration:none; display:inline-block;">アイマスDB</a>
+    </div>
     <div style="font-size:12px; color:var(--muted); margin-bottom:14px;">
       担当アイドル: <span style="color:var(--gold);">${selectedIdol}</span>(BINGO成立ラインの担当曲マス1つにつきスコア×2)
     </div>
     <div class="table-scroll"><table>
-      <thead><tr><th>ライン</th><th>ベット</th><th>的中数</th><th>結果</th><th>担当曲</th><th>払戻</th></tr></thead>
+      <thead><tr><th>グループ</th><th>ベット</th><th>BINGO本数</th><th>払戻</th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
     <div class="flex-gap" style="font-size:13px; margin-bottom:14px;">
@@ -1743,9 +1697,8 @@ function drawRoundedRect(ctx, x, y, w, h, r, fill) {
   ctx.fill();
 }
 
-function wrapTextCentered(ctx, text, cx, startY, maxWidth, lineHeight, maxLines) {
-  ctx.textAlign = "center";
-  if (!text) { ctx.fillText("(未選択)", cx, startY); return; }
+function wrapLinesForWidth(ctx, text, maxWidth, maxLines) {
+  if (!text) return null;
   const chars = [...text];
   const lines = [];
   let current = "";
@@ -1766,6 +1719,23 @@ function wrapTextCentered(ctx, text, cx, startY, maxWidth, lineHeight, maxLines)
     while (last.length > 0 && ctx.measureText(last + "…").width > maxWidth) last = last.slice(0, -1);
     lines[maxLines - 1] = last + "…";
   }
+  return lines;
+}
+
+function wrapTextCentered(ctx, text, cx, startY, maxWidth, lineHeight, maxLines) {
+  ctx.textAlign = "center";
+  const lines = wrapLinesForWidth(ctx, text, maxWidth, maxLines);
+  if (!lines) { ctx.fillText("(未選択)", cx, startY); return; }
+  lines.forEach((line, i) => ctx.fillText(line, cx, startY + i * lineHeight));
+}
+
+// 縦方向も中央揃えにしたい場合(ビンゴ盤のマス用)
+function wrapTextCenteredBlock(ctx, text, cx, boxTop, boxHeight, maxWidth, lineHeight, maxLines) {
+  ctx.textAlign = "center";
+  const lines = wrapLinesForWidth(ctx, text, maxWidth, maxLines);
+  if (!lines) { ctx.fillText("(未選択)", cx, boxTop + boxHeight / 2 - lineHeight / 2); return; }
+  const blockHeight = lines.length * lineHeight;
+  const startY = boxTop + Math.max(0, (boxHeight - blockHeight) / 2);
   lines.forEach((line, i) => ctx.fillText(line, cx, startY + i * lineHeight));
 }
 
@@ -1873,9 +1843,11 @@ async function generateShareImage() {
       ctx.fillStyle = "#e8791e";
       ctx.fillText(isOpening ? "OPENING" : "ENCORE", x + cellSize / 2, y + 10);
     }
-    ctx.font = "500 22px 'Inter', sans-serif";
+    ctx.font = "700 40px 'Inter', sans-serif";
     ctx.fillStyle = "#2b2119";
-    wrapTextCentered(ctx, board[i] || "", x + cellSize / 2, y + (special ? 42 : 20), cellSize - 20, 25, 3);
+    const textBoxTop = y + (special ? 40 : 10);
+    const textBoxHeight = cellSize - (special ? 50 : 20);
+    wrapTextCenteredBlock(ctx, board[i] || "", x + cellSize / 2, textBoxTop, textBoxHeight, cellSize - 16, 46, 3);
   }
   ctx.textAlign = "left";
 
@@ -2177,7 +2149,7 @@ document.getElementById("trigger-trend-btn").addEventListener("click", async () 
   if (error) {
     statusEl.textContent = `エラーが出ました: ${error.message}`;
   } else {
-    statusEl.textContent = "✓ 集計しました(トレンドタブで確認できます)";
+    statusEl.textContent = "✓ 集計しました(流行タブで確認できます)";
   }
 });
 
