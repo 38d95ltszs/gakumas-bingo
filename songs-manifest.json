@@ -1,0 +1,4 @@
+[
+  { "id": "gakumas", "label": "学園アイドルマスター(テスト)", "file": "songs-data.json" },
+  { "id": "gaku", "label": "GAKU", "file": "songs-data-gaku.json" }
+]

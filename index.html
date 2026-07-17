@@ -342,10 +342,14 @@ td, th { padding: 6px; }
           </div>
         </div>
         <div style="margin-top:14px;">
+          <label for="new-event-songs-select" style="display:block; font-size:12px; color:var(--muted); margin-bottom:4px;">候補曲リスト</label>
+          <select id="new-event-songs-select"></select>
+        </div>
+        <div style="margin-top:14px;">
           <label for="new-event-casts-select" style="display:block; font-size:12px; color:var(--muted); margin-bottom:4px;">担当アイドル一覧</label>
           <select id="new-event-casts-select"></select>
         </div>
-        <p class="note-text" style="margin-top:10px;">候補曲は全大会共通(songs-data.json)を使う。担当アイドル一覧は上で選んだものが使われる(追加したい場合はリポジトリにJSONを追加し、casts-manifest.jsonにも登録する)。</p>
+        <p class="note-text" style="margin-top:10px;">候補曲・担当アイドルは、それぞれ上で選んだものが使われる(追加したい場合はリポジトリにJSONを追加し、songs-manifest.json / casts-manifest.jsonにも登録する)。</p>
 
         <div class="flex-gap" style="margin-top:14px;">
           <button id="submit-create-event-btn" class="btn-primary btn-sm">作成する</button>
@@ -547,6 +551,16 @@ td, th { padding: 6px; }
             <button id="edit-deadline-btn" class="btn-primary btn-sm">締切を更新</button>
           </div>
           <div id="edit-deadline-status" class="ok-text hidden" style="margin-top:8px;"></div>
+        </div>
+
+        <div class="card">
+          <h2>候補曲リストの変更</h2>
+          <p class="lede">この大会で使う候補曲JSONを切り替える。参加者がビンゴのマスに入力できる曲の選択肢が変わる。</p>
+          <div class="flex-gap">
+            <select id="edit-songs-select" style="flex:1;"></select>
+            <button id="edit-songs-btn" class="btn-primary btn-sm">変更する</button>
+          </div>
+          <div id="edit-songs-status" class="ok-text hidden" style="margin-top:8px;"></div>
         </div>
 
         <div class="card">
@@ -915,7 +929,7 @@ async function onLoggedIn(user, id) {
   document.getElementById("show-create-event-btn").classList.toggle("hidden", id !== SUPER_ADMIN_LOGIN_ID);
   authScreen.classList.add("hidden");
   appScreen.classList.remove("hidden");
-  await Promise.all([loadSongsCatalog(), loadCastsManifest()]);
+  await Promise.all([loadSongsManifest(), loadCastsManifest()]);
   await loadEvents();
 }
 
@@ -958,24 +972,40 @@ document.getElementById("event-select").addEventListener("change", async (e) => 
   document.getElementById("admin-tab-btn").classList.toggle("hidden", !isAdminOfEvent);
   isLocked = new Date() >= new Date(selectedEvent.deadline);
 
-  await loadIdolsForEvent();
+  await Promise.all([loadIdolsForEvent(), loadSongsForEvent()]);
   await Promise.all([loadEventSetlist(), loadGameSave()]);
   switchTab("predict");
   renderPredictTab();
 });
 
-let songsLoaded = false;
-async function loadSongsCatalog() {
-  if (songsLoaded) return;
+let songsManifest = [];
+let songsManifestLoaded = false;
+const DEFAULT_SONGS_FILE = "songs-data.json";
+async function loadSongsManifest() {
+  if (songsManifestLoaded) return;
   try {
     const bust = Date.now();
-    const res = await fetch(`./songs-data.json?v=${bust}`, { cache: "no-store" });
-    if (!res.ok) throw new Error(`songs-data.json HTTP ${res.status}`);
-    eventSongs = await res.json();
-    songsLoaded = true;
+    const res = await fetch(`./songs-manifest.json?v=${bust}`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`songs-manifest.json HTTP ${res.status}`);
+    songsManifest = await res.json();
+    songsManifestLoaded = true;
   } catch (e) {
-    console.error("候補曲の読み込みに失敗しました(songs-data.json)", e);
-    eventSongs = eventSongs.length ? eventSongs : [];
+    console.error("候補曲JSON一覧の読み込みに失敗しました(songs-manifest.json)", e);
+    songsManifest = [{ id: "default", label: "デフォルト", file: DEFAULT_SONGS_FILE }];
+  }
+}
+
+// 大会ごとに指定された候補曲JSONを読み込む(大会選択のたびに呼ばれる)
+async function loadSongsForEvent() {
+  const file = (selectedEvent && selectedEvent.songs_file) || DEFAULT_SONGS_FILE;
+  try {
+    const bust = Date.now();
+    const res = await fetch(`./${file}?v=${bust}`, { cache: "no-store" });
+    if (!res.ok) throw new Error(`${file} HTTP ${res.status}`);
+    eventSongs = await res.json();
+  } catch (e) {
+    console.error(`候補曲の読み込みに失敗しました(${file})`, e);
+    eventSongs = [];
   }
 }
 
@@ -1012,8 +1042,8 @@ async function loadIdolsForEvent() {
 
 document.getElementById("show-create-event-btn").addEventListener("click", () => {
   document.getElementById("create-event-form").classList.toggle("hidden");
-  const sel = document.getElementById("new-event-casts-select");
-  sel.innerHTML = castsManifest.map((c) => `<option value="${c.file}">${c.label}</option>`).join("");
+  document.getElementById("new-event-songs-select").innerHTML = songsManifest.map((c) => `<option value="${c.file}">${c.label}</option>`).join("");
+  document.getElementById("new-event-casts-select").innerHTML = castsManifest.map((c) => `<option value="${c.file}">${c.label}</option>`).join("");
 });
 document.getElementById("cancel-create-event-btn").addEventListener("click", () => {
   document.getElementById("create-event-form").classList.add("hidden");
@@ -1025,6 +1055,7 @@ document.getElementById("submit-create-event-btn").addEventListener("click", asy
   const eventDate = document.getElementById("new-event-date").value;
   const deadline = document.getElementById("new-event-deadline").value;
   const castsFile = document.getElementById("new-event-casts-select").value || DEFAULT_CASTS_FILE;
+  const songsFile = document.getElementById("new-event-songs-select").value || DEFAULT_SONGS_FILE;
 
   if (!name || !deadline) {
     errEl.textContent = "大会名と締切は必須です。";
@@ -1037,7 +1068,7 @@ document.getElementById("submit-create-event-btn").addEventListener("click", asy
   try {
     const { error: evError } = await supabase
       .from("events")
-      .insert({ name, event_date: eventDate || null, deadline: new Date(deadline).toISOString(), created_by: currentUser.id, casts_file: castsFile });
+      .insert({ name, event_date: eventDate || null, deadline: new Date(deadline).toISOString(), created_by: currentUser.id, casts_file: castsFile, songs_file: songsFile });
     if (evError) throw evError;
 
     document.getElementById("create-event-form").classList.add("hidden");
@@ -2165,6 +2196,12 @@ function renderAdminTab() {
     statusLine.textContent = "まだ正解セトリは登録されていません。";
   }
 
+  const currentSongsFile = selectedEvent.songs_file || DEFAULT_SONGS_FILE;
+  const songsSel = document.getElementById("edit-songs-select");
+  songsSel.innerHTML = songsManifest.map((c) => `<option value="${c.file}">${c.label}</option>`).join("");
+  songsSel.value = currentSongsFile;
+  document.getElementById("edit-songs-status").classList.add("hidden");
+
   const currentCastsFile = selectedEvent.casts_file || DEFAULT_CASTS_FILE;
   const castsSel = document.getElementById("edit-casts-select");
   castsSel.innerHTML = castsManifest.map((c) => `<option value="${c.file}">${c.label}</option>`).join("");
@@ -2295,6 +2332,20 @@ document.getElementById("edit-deadline-btn").addEventListener("click", async () 
   renderDeadlineBanner();
   updateConfirmState();
   await loadEvents();
+});
+
+document.getElementById("edit-songs-btn").addEventListener("click", async () => {
+  const file = document.getElementById("edit-songs-select").value;
+  const statusEl = document.getElementById("edit-songs-status");
+  statusEl.classList.remove("hidden");
+  statusEl.textContent = "更新中…";
+
+  const { error } = await supabase.from("events").update({ songs_file: file }).eq("id", selectedEvent.id);
+  if (error) { statusEl.textContent = "更新に失敗しました: " + error.message; return; }
+
+  selectedEvent.songs_file = file;
+  await loadSongsForEvent();
+  statusEl.textContent = "✓ 候補曲リストを更新しました。参加者が選べる曲が切り替わります。";
 });
 
 document.getElementById("edit-casts-btn").addEventListener("click", async () => {

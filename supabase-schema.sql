@@ -15,12 +15,14 @@ create table if not exists public.events (
   created_by uuid references auth.users(id) not null,
   setlist_front_count integer,       -- (非推奨・未使用) 前半/後半を分けていた頃の名残。今は判定に使っていない
   casts_file text default 'casts-data.json', -- この大会で使う担当アイドルJSON(casts-manifest.jsonのfile値)
+  songs_file text default 'songs-data.json', -- この大会で使う候補曲JSON(songs-manifest.jsonのfile値)
   created_at timestamptz not null default now()
 );
 
 -- 既存のテーブルに対しては以下を個別に実行してください(既にある場合はエラーにならずスキップされる)
 alter table public.events add column if not exists setlist_front_count integer;
 alter table public.events add column if not exists casts_file text default 'casts-data.json';
+alter table public.events add column if not exists songs_file text default 'songs-data.json';
 
 alter table public.events enable row level security;
 
