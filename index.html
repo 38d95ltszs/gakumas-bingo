@@ -743,7 +743,7 @@ const HELP_TEXTS = {
   },
   sns: {
     title: "SNS共有について",
-    body: "セトリ予想ビンゴの図とベット状況を1枚の画像(JPG)にして生成する。「画像を保存」で端末に保存、「Xに投稿」を押すと、対応する端末(主にスマホ)ではOS標準の共有シートからXへ画像とコメントをまとめて渡せる。対応していない環境では、画像を自動保存したうえでXの投稿画面をコメント付きで開くので、その画面に画像を手動で添付してほしい。9マス全部を埋めてから生成できる。",
+    body: "セトリ予想ビンゴの図とベット状況を1枚の画像(JPG)にして生成する。「画像を保存」を押すと、対応する端末(主にスマホ)ではOS標準の共有シートが開くので、そこで「イメージを保存」を選ぶと写真(カメラロール)に保存される。「Xに投稿」を押すと、対応する端末ではOS標準の共有シートからXへ画像とコメントをまとめて渡せる。どちらも対応していない環境(主にPC)では、ファイルとしてダウンロードされる。9マス全部を埋めてから生成できる。",
   },
   ranking: {
     title: "結果について",
@@ -1994,8 +1994,23 @@ async function generateShareImage() {
 
 document.getElementById("share-generate-btn").addEventListener("click", generateShareImage);
 
-document.getElementById("share-download-btn").addEventListener("click", () => {
+document.getElementById("share-download-btn").addEventListener("click", async () => {
   if (!generatedImageBlob) return;
+  const file = new File([generatedImageBlob], `${selectedEvent.name}-setlist-bingo.jpg`, { type: "image/jpeg" });
+
+  // 対応端末(主にスマホ)ではOS標準の共有シートを開く。
+  // ここに出る「イメージを保存」を選ぶと、写真(カメラロール)に保存される。
+  // (<a download>方式だと、iOSでは「ファイル」に保存されてしまうため)
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file] });
+      return;
+    } catch (e) {
+      if (e && e.name === "AbortError") return; // ユーザーがキャンセルした場合はそのまま終了
+    }
+  }
+
+  // 非対応環境(主にPC)ではファイルとしてダウンロードする
   const a = document.createElement("a");
   a.href = URL.createObjectURL(generatedImageBlob);
   a.download = `${selectedEvent.name}-setlist-bingo.jpg`;
