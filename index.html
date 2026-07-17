@@ -1816,7 +1816,7 @@ function currentShareUrl() {
   return location.origin + location.pathname;
 }
 function shareTextTemplate() {
-  return `${selectedEvent.name}、わたしのセトリ予想！\n${currentShareUrl()}`;
+  return `${selectedEvent.name}、わたしのセトリ予想！\n${currentShareUrl()}\n#セトリ予想ビンゴ`;
 }
 
 function drawMiniBoardIcon(ctx, x, y, size, cellSet) {
