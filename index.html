@@ -1981,7 +1981,7 @@ async function generateShareImage() {
   if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch {} }
 
   const canvas = document.getElementById("share-canvas");
-  canvas.width = 1080; canvas.height = result ? 1754 : 1620;
+  canvas.width = 1080; canvas.height = result ? 1774 : 1620;
   const ctx = canvas.getContext("2d");
   const W = canvas.width, H = canvas.height;
 
@@ -2010,20 +2010,6 @@ async function generateShareImage() {
   const boardSize = 900;
   const boardX = (W - boardSize) / 2;
   let cursorY = 190;
-
-  // ---- 最終ジュエル(結果確定後のみ) ----
-  if (result) {
-    const bannerH = 110;
-    drawRoundedRect(ctx, boardX, cursorY, boardSize, bannerH, 18, "#fbf3e4");
-    ctx.textAlign = "center";
-    ctx.font = "700 20px 'Inter', sans-serif";
-    ctx.fillStyle = "#9c8b76";
-    ctx.fillText("最終ジュエル", W / 2, cursorY + 18);
-    ctx.font = "800 56px 'JetBrains Mono', monospace";
-    ctx.fillStyle = "#e8791e";
-    ctx.fillText(result.finalTotal.toLocaleString(), W / 2, cursorY + 42);
-    cursorY += bannerH + 24;
-  }
 
   // ---- ビンゴ盤 ----
   const boardY = cursorY;
@@ -2099,6 +2085,27 @@ async function generateShareImage() {
     ctx.font = "500 14px 'Inter', sans-serif";
     ctx.fillStyle = "#9c8b76";
     wrapTextCenteredBlock(ctx, `C.V.${selectedIdolCv}`, idolBoxX + idolBoxW / 2, betY + idolBoxH - 40, 32, idolBoxW - 24, 17, 2);
+  }
+  ctx.textAlign = "left";
+
+  // ---- 最終ジュエル(結果確定後のみ、ベット・担当アイドルの下いっぱいに表示) ----
+  let finalBannerBottom = betY + betRowH * 3 + betGap * 2;
+  if (result) {
+    const bannerY = finalBannerBottom + 24;
+    const bannerH = 130;
+    const gachaCount = Math.floor(result.finalTotal / 300);
+    drawRoundedRect(ctx, boardX, bannerY, boardSize, bannerH, 18, "#fbf3e4");
+    ctx.textAlign = "center";
+    ctx.font = "700 20px 'Inter', sans-serif";
+    ctx.fillStyle = "#9c8b76";
+    ctx.fillText("最終ジュエル", W / 2, bannerY + 16);
+    ctx.font = "700 56px 'JetBrains Mono', monospace";
+    ctx.fillStyle = "#e8791e";
+    ctx.fillText(result.finalTotal.toLocaleString(), W / 2, bannerY + 44);
+    ctx.font = "700 22px 'JetBrains Mono', monospace";
+    ctx.fillStyle = "#9c8b76";
+    ctx.fillText(`(ガシャ ${gachaCount.toLocaleString()} 連)`, W / 2, bannerY + 100);
+    finalBannerBottom = bannerY + bannerH;
   }
   ctx.textAlign = "left";
 
