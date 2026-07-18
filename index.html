@@ -190,6 +190,17 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   left: 50%; top: auto; bottom: 0; transform: translateX(-50%);
   width: min(375px, 100vw); max-height: 75vh; border-radius: 16px 16px 0 0; padding: 16px;
 }
+
+#tutorial-backdrop {
+  position: fixed; inset: 0; background: rgba(30,15,5,0.6); z-index: 220;
+}
+#tutorial-modal {
+  position: fixed; z-index: 221; background: var(--card); border: 1px solid var(--line);
+  left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: min(340px, 88vw); max-height: 80vh; overflow-y: auto;
+  border-radius: 16px; padding: 26px 22px 20px; text-align: center;
+}
+#tutorial-modal .flex-gap { text-align: left; }
 .picker-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 #song-picker-search { width: 100%; font-size: 15px; padding: 10px 12px; margin-bottom: 10px; }
 .picker-list { overflow-y: auto; flex: 1; }
@@ -314,7 +325,8 @@ td, th { padding: 6px; }
       </div>
       <div class="whoami">
         <span id="whoami-id">-</span> でログイン中
-        <button id="logout-btn" class="btn-ghost btn-sm" style="margin-left:10px;">ログアウト</button>
+        <button id="tutorial-open-btn" class="btn-ghost btn-sm" style="margin-left:10px;">使い方</button>
+        <button id="logout-btn" class="btn-ghost btn-sm" style="margin-left:6px;">ログアウト</button>
       </div>
     </div>
 
@@ -619,6 +631,22 @@ td, th { padding: 6px; }
     </div>
     <input id="song-picker-search" type="text" placeholder="曲名を検索…" autocomplete="off">
     <div id="song-picker-list" class="picker-list"></div>
+  </div>
+
+  <!-- ===== チュートリアル ===== -->
+  <div id="tutorial-backdrop" class="hidden"></div>
+  <div id="tutorial-modal" class="hidden">
+    <div id="tutorial-step-count" class="mono-font" style="font-size:11px; color:var(--muted); margin-bottom:8px;"></div>
+    <div id="tutorial-icon" style="font-size:40px; margin-bottom:10px;"></div>
+    <h2 id="tutorial-title" class="display-font" style="font-size:24px; margin:0 0 10px;"></h2>
+    <p id="tutorial-body" style="font-size:14px; line-height:1.8; color:var(--text); white-space:pre-line; margin:0 0 20px;"></p>
+    <div class="flex-gap" style="justify-content:space-between;">
+      <button id="tutorial-skip-btn" class="btn-ghost btn-sm">スキップ</button>
+      <div class="flex-gap" style="gap:8px;">
+        <button id="tutorial-back-btn" class="btn-ghost btn-sm">戻る</button>
+        <button id="tutorial-next-btn" class="btn-primary btn-sm">次へ</button>
+      </div>
+    </div>
   </div>
 
   <!-- ===== フロート保存ボタン ===== -->
@@ -932,7 +960,79 @@ async function onLoggedIn(user, id) {
   appScreen.classList.remove("hidden");
   await Promise.all([loadSongsManifest(), loadCastsManifest()]);
   await loadEvents();
+
+  if (!localStorage.getItem("setlist_bingo_tutorial_seen_v1")) {
+    openTutorial();
+  }
 }
+
+// ================= チュートリアル =================
+const TUTORIAL_STEPS = [
+  {
+    icon: "🎫",
+    title: "セットリスト予想ビンゴへようこそ！",
+    body: "待ちに待ったライブ、たのしみですね！\nセットリストを予想して遊びましょう！",
+  },
+  {
+    icon: "📅",
+    title: "参加するビンゴ大会を選ぼう！",
+    body: "お目当てのライブを選択しましょう！",
+  },
+  {
+    icon: "📇",
+    title: "プロデューサー名刺を作ろう！",
+    body: "お名前、ひとこと、そして担当アイドルを選ぼう。\n担当アイドルの歌唱曲を当てると、ビンゴの得点が倍増！",
+  },
+  {
+    icon: "🎯",
+    title: "セットリスト予想ビンゴを作ろう！",
+    body: "最高のセットリストを予想して、9マスを埋めよう\n左上は1曲目、右下は最後の曲を予想する特別枠だ！",
+  },
+  {
+    icon: "💰",
+    title: "ビンゴ列に賭けよう！",
+    body: "倍率別に3つの賭け方ができるぞ\n特別枠を両方当てる「マスター」は765倍！",
+  },
+  {
+    icon: "📈",
+    title: "流行でほかのプロデューサーの予想を見よう！",
+    body: "流行タブでは登録済みの予想を確認できるぞ\n決めた予想を考え直すことになるかも…？",
+  },
+];
+let tutorialStepIndex = 0;
+
+function renderTutorialStep() {
+  const step = TUTORIAL_STEPS[tutorialStepIndex];
+  document.getElementById("tutorial-step-count").textContent = `${tutorialStepIndex + 1} / ${TUTORIAL_STEPS.length}`;
+  document.getElementById("tutorial-icon").textContent = step.icon;
+  document.getElementById("tutorial-title").textContent = step.title;
+  document.getElementById("tutorial-body").textContent = step.body;
+  document.getElementById("tutorial-back-btn").classList.toggle("hidden", tutorialStepIndex === 0);
+  document.getElementById("tutorial-next-btn").textContent =
+    tutorialStepIndex === TUTORIAL_STEPS.length - 1 ? "はじめる!" : "次へ";
+}
+
+function openTutorial() {
+  tutorialStepIndex = 0;
+  renderTutorialStep();
+  document.getElementById("tutorial-backdrop").classList.remove("hidden");
+  document.getElementById("tutorial-modal").classList.remove("hidden");
+}
+function closeTutorial() {
+  document.getElementById("tutorial-backdrop").classList.add("hidden");
+  document.getElementById("tutorial-modal").classList.add("hidden");
+  localStorage.setItem("setlist_bingo_tutorial_seen_v1", "1");
+}
+document.getElementById("tutorial-open-btn").addEventListener("click", openTutorial);
+document.getElementById("tutorial-skip-btn").addEventListener("click", closeTutorial);
+document.getElementById("tutorial-back-btn").addEventListener("click", () => {
+  if (tutorialStepIndex > 0) { tutorialStepIndex--; renderTutorialStep(); }
+});
+document.getElementById("tutorial-next-btn").addEventListener("click", () => {
+  if (tutorialStepIndex < TUTORIAL_STEPS.length - 1) { tutorialStepIndex++; renderTutorialStep(); }
+  else { closeTutorial(); }
+});
+document.getElementById("tutorial-backdrop").addEventListener("click", closeTutorial);
 
 (async () => {
   const { data } = await supabase.auth.getSession();
