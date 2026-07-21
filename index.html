@@ -1057,7 +1057,7 @@ document.getElementById("tutorial-backdrop").addEventListener("click", closeTuto
 
 // ================= 大会(イベント) =================
 async function loadEvents() {
-  const { data, error } = await supabase.from("events").select("*").order("deadline", { ascending: true });
+  const { data, error } = await supabase.from("events").select("*").order("deadline", { ascending: false });
   if (error) { console.error(error); return; }
   events = data || [];
   const sel = document.getElementById("event-select");
