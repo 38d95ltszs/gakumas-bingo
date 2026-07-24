@@ -583,6 +583,16 @@ td, th { padding: 6px; }
         </div>
 
         <div class="card">
+          <h2>結果タブのリンク先URL</h2>
+          <p class="lede">結果タブの「アイマスDB」ボタンのリンク先を設定する。トップページではなく、<b>そのライブの該当ページ</b>のURLを設定することを推奨(空欄の場合はアイマスDBのトップページになる)。</p>
+          <div class="flex-gap">
+            <input id="edit-reference-url" type="text" placeholder="https://imas-db.jp/..." style="flex:1;">
+            <button id="edit-reference-url-btn" class="btn-primary btn-sm">変更する</button>
+          </div>
+          <div id="edit-reference-url-status" class="ok-text hidden" style="margin-top:8px;"></div>
+        </div>
+
+        <div class="card">
           <h2>担当アイドル一覧の変更</h2>
           <p class="lede">この大会で使う担当アイドルJSONを切り替える。参加者が選べる「担当アイドル」の選択肢が変わる。</p>
           <div class="flex-gap">
@@ -1852,7 +1862,7 @@ function renderResult() {
   box.innerHTML = `
     <div class="flex-gap" style="justify-content:space-between; margin-bottom:4px;">
       <h2 class="display-font" style="font-size:24px; margin:0;">確定結果</h2>
-      <a href="https://imas-db.jp/" target="_blank" rel="noopener" class="btn-ghost btn-sm" style="text-decoration:none; display:inline-block;">アイマスDB</a>
+      <a href="${escapeHtml(selectedEvent.reference_url || "https://imas-db.jp/")}" target="_blank" rel="noopener" class="btn-ghost btn-sm" style="text-decoration:none; display:inline-block;">アイマスDB</a>
     </div>
     <div style="font-size:12px; color:var(--muted); margin-bottom:14px;">
       担当アイドル: <span style="color:var(--gold);">${selectedIdol}</span>(BINGO成立ラインの担当曲マス1つにつきスコア×2)
@@ -2362,6 +2372,9 @@ function renderAdminTab() {
   songsSel.value = currentSongsFile;
   document.getElementById("edit-songs-status").classList.add("hidden");
 
+  document.getElementById("edit-reference-url").value = selectedEvent.reference_url || "";
+  document.getElementById("edit-reference-url-status").classList.add("hidden");
+
   const currentCastsFile = selectedEvent.casts_file || DEFAULT_CASTS_FILE;
   const castsSel = document.getElementById("edit-casts-select");
   castsSel.innerHTML = castsManifest.map((c) => `<option value="${c.file}">${c.label}</option>`).join("");
@@ -2506,6 +2519,25 @@ document.getElementById("edit-songs-btn").addEventListener("click", async () => 
   selectedEvent.songs_file = file;
   await loadSongsForEvent();
   statusEl.textContent = "✓ 候補曲リストを更新しました。参加者が選べる曲が切り替わります。";
+});
+
+document.getElementById("edit-reference-url-btn").addEventListener("click", async () => {
+  const url = document.getElementById("edit-reference-url").value.trim();
+  const statusEl = document.getElementById("edit-reference-url-status");
+  statusEl.classList.remove("hidden");
+
+  if (url && !/^https?:\/\//i.test(url)) {
+    statusEl.textContent = "URLは http:// または https:// から始めてください。";
+    return;
+  }
+
+  statusEl.textContent = "更新中…";
+  const { error } = await supabase.from("events").update({ reference_url: url || null }).eq("id", selectedEvent.id);
+  if (error) { statusEl.textContent = "更新に失敗しました: " + error.message; return; }
+
+  selectedEvent.reference_url = url || null;
+  renderResult();
+  statusEl.textContent = url ? "✓ リンク先を更新しました。" : "✓ 空欄にしたので、アイマスDBのトップページに戻ります。";
 });
 
 document.getElementById("edit-casts-btn").addEventListener("click", async () => {
